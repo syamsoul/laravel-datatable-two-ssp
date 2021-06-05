@@ -1,0 +1,32 @@
+{
+    "name": "syamsoul/laravel-datatable-two-ssp",
+    "description": "DataTable SSP (PHP) for Laravel. This package allows you to manage your DataTable from server-side in Laravel app.",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Syamsoul Azrien",
+            "email": "syamsoulazrien.miat@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=7.1.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "SoulDoit\\DataTableTwo\\": "src"
+        },
+        "files": [
+            "src/helpers.php"
+        ]
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "SoulDoit\\DataTableTwo\\DataTableServiceProvider"
+            ]
+        }
+    }
+}
