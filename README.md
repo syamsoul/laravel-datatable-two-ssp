@@ -36,6 +36,16 @@ You can install the package via composer:
 ``` bash
 composer require syamsoul/laravel-datatable-two-ssp
 ```
+
+&nbsp;
+
+And you can publish the `config/sd-datatable-two-ssp.php` file:
+
+``` bash
+php artisan vendor:publish --provider="SoulDoit\DataTableTwo\DataTableServiceProvider"
+```
+
+&nbsp;
 &nbsp;
 ***NOTE***: Please see [CHANGELOG](CHANGELOG.md) for more information about what has changed recently.
 
@@ -80,18 +90,18 @@ class UserListController extends Controller
 {
     use SSP;
 
-    private function dtColumns()
+    protected function dtColumns()
     {
         return [
-            ['label'=>'ID',                'db'=>'id'              ],
-            ['label'=>'Email',           'db'=>'email'        ],
-            ['label'=>'Username',   'db'=>'username' ],
-            ['label'=>'Created At',  'db'=>'created_at'],
+            ['label'=>'ID',         'db'=>'id'          ],
+            ['label'=>'Email',      'db'=>'email'       ],
+            ['label'=>'Username',   'db'=>'username'    ],
+            ['label'=>'Created At', 'db'=>'created_at'  ],
         ];
     }
 
 
-    private function dtQuery($selected_columns)
+    protected function dtQuery($selected_columns)
     {
         return \App\Models\User::select($selected_columns);
     }

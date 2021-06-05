@@ -1,6 +1,6 @@
 {
     "name": "syamsoul/laravel-datatable-two-ssp",
-    "description": "DataTable SSP (PHP) for Laravel. This package allows you to manage your DataTable from server-side in Laravel app.",
+    "description": "DataTable SSP for Laravel. This package allows you to manage your DataTable from server-side in Laravel app.",
     "license": "MIT",
     "authors": [
         {
