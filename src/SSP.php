@@ -62,9 +62,10 @@ trait SSP{
 
         $dt_cols = $this->dtColumns();
 
-        $db_cols = [];
+        $db_cols = []; $formatter = [];
         foreach($dt_cols as $dt_col){
             array_push($db_cols, $dt_col['db']);
+            if(isset($dt_col['formatter'])) $formatter[$dt_col['db']] = $dt_col['formatter'];
         }
 
         $the_query = $this->dtQuery($db_cols);
@@ -89,8 +90,16 @@ trait SSP{
 
             }
 
-            $the_query_data = $the_query->get()->toArray();
+            $the_query_data_eloq = $the_query->get();
 
+            $the_query_data = [];
+            foreach($the_query_data_eloq as $key=>$e_tqde){
+                $the_query_data[$key] = [];
+                foreach($db_cols as $e_db_col){
+                    if(isset($formatter[$e_db_col])) $the_query_data[$key][$e_db_col] = $formatter[$e_db_col]($e_tqde->{$e_db_col}, $e_tqde);
+                    else $the_query_data[$key][$e_db_col] = $e_tqde->{$e_db_col};
+                }
+            }
 
 
             if($frontend_framework == "datatablejs"){
