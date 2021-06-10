@@ -96,8 +96,12 @@ trait SSP{
             foreach($the_query_data_eloq as $key=>$e_tqde){
                 $the_query_data[$key] = [];
                 foreach($db_cols as $e_db_col){
-                    if(isset($formatter[$e_db_col])) $the_query_data[$key][$e_db_col] = $formatter[$e_db_col]($e_tqde->{$e_db_col}, $e_tqde);
-                    else $the_query_data[$key][$e_db_col] = $e_tqde->{$e_db_col};
+                    if(isset($formatter[$e_db_col])){
+                        if(is_callable($formatter[$e_db_col])) $the_query_data[$key][$e_db_col] = $formatter[$e_db_col]($e_tqde->{$e_db_col}, $e_tqde);
+                        elseif(is_string($formatter[$e_db_col])) $the_query_data[$key][$e_db_col] = strtr($formatter[$e_db_col], ["{value}"=>$e_tqde->{$e_db_col}]);
+                    }else{
+                        $the_query_data[$key][$e_db_col] = $e_tqde->{$e_db_col};
+                    }
                 }
             }
 
