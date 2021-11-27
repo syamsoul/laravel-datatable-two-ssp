@@ -44,7 +44,7 @@ trait SSP{
 
                 array_push($frontend_dt_cols, [
                     'text' => $dt_col['label'],
-                    'value' => $dt_col['db'],
+                    'value' => $dt_col['db'] ?? $dt_col['db_fake'],
                 ]);
 
             }
@@ -62,10 +62,12 @@ trait SSP{
 
         $dt_cols = $this->dtColumns();
 
-        $db_cols = []; $formatter = [];
+        $db_cols = []; $db_cols_fake = []; $formatter = [];
         foreach($dt_cols as $dt_col){
-            array_push($db_cols, $dt_col['db']);
-            if(isset($dt_col['formatter'])) $formatter[$dt_col['db']] = $dt_col['formatter'];
+            if(isset($dt_col['db'])) array_push($db_cols, $dt_col['db']);
+            elseif(isset($dt_col['db_fake'])) array_push($db_cols_fake, $dt_col['db_fake']);
+
+            if(isset($dt_col['formatter'])) $formatter[$dt_col['db'] ?? $dt_col['db_fake']] = $dt_col['formatter'];
         }
 
         $the_query = $this->dtQuery($db_cols);
@@ -103,6 +105,9 @@ trait SSP{
                         $the_query_data[$key][$e_db_col] = $e_tqde->{$e_db_col};
                     }
                 }
+                foreach($db_cols_fake as $e_db_col){
+                    $the_query_data[$key][$e_db_col] = $formatter[$e_db_col]($e_tqde);
+                }
             }
 
 
@@ -110,9 +115,8 @@ trait SSP{
 
                 $pair_key_column_index = [];
                 foreach($dt_cols as $key=>$dt_col){
-                    $pair_key_column_index[$dt_col['db']] = $key;
+                    $pair_key_column_index[$dt_col['db'] ?? $dt_col['db_fake']] = $key;
                 }
-
 
                 $new_query_data = [];
                 foreach($the_query_data as $key=>$e_tqdata){
