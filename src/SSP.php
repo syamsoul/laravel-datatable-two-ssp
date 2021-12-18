@@ -62,10 +62,22 @@ trait SSP{
 
         $dt_cols = $this->dtColumns();
 
-        $db_cols = []; $db_cols_fake = []; $formatter = [];
-        foreach($dt_cols as $dt_col){
-            if(isset($dt_col['db'])) array_push($db_cols, $dt_col['db']);
-            elseif(isset($dt_col['db_fake'])) array_push($db_cols_fake, $dt_col['db_fake']);
+        $db_cols = []; $db_cols_mid = []; $db_cols_final = []; $db_cols_fake = []; $formatter = [];
+        foreach($dt_cols as $key=>$dt_col){
+            if(isset($dt_col['db'])){
+                $db_cols[$key] = $dt_col['db'];
+                $dt_col_db_arr = explode(" AS ", $dt_col['db']);
+                if(count($dt_col_db_arr) == 2){
+                    $db_cols_final[$key] = $dt_col_db_arr[1];
+                    $db_cols_mid[$key] = $dt_col_db_arr[1];
+                }else{
+                    $dt_col_db_arr = explode(".", $dt_col['db']);
+                    if(count($dt_col_db_arr) == 2) $db_cols_final[$key] = $dt_col_db_arr[1];
+                    else $db_cols_final[$key] = $dt_col['db'];
+
+                    $db_cols_mid[$key] = $dt_col['db'];
+                }
+            }elseif(isset($dt_col['db_fake'])) $db_cols_fake[$key] = $dt_col['db_fake'];
 
             if(isset($dt_col['formatter'])) $formatter[$dt_col['db'] ?? $dt_col['db_fake']] = $dt_col['formatter'];
         }
@@ -78,7 +90,7 @@ trait SSP{
 
             if($frontend_framework == "datatablejs"){
 
-                $the_query->orderBy($dt_cols[$request->order[0]["column"]]['db'], $request->order[0]['dir']);
+                $the_query->orderBy($db_cols_mid[$request->order[0]["column"]], $request->order[0]['dir']);
 
                 if($request->length != "-1") $the_query->limit($request->length)->offset($request->start);
 
@@ -97,16 +109,16 @@ trait SSP{
             $the_query_data = [];
             foreach($the_query_data_eloq as $key=>$e_tqde){
                 $the_query_data[$key] = [];
-                foreach($db_cols as $e_db_col){
-                    if(isset($formatter[$e_db_col])){
-                        if(is_callable($formatter[$e_db_col])) $the_query_data[$key][$e_db_col] = $formatter[$e_db_col]($e_tqde->{$e_db_col}, $e_tqde);
-                        elseif(is_string($formatter[$e_db_col])) $the_query_data[$key][$e_db_col] = strtr($formatter[$e_db_col], ["{value}"=>$e_tqde->{$e_db_col}]);
+                foreach($db_cols_final as $key_2=>$e_db_col){
+                    if(isset($formatter[$db_cols[$key_2]])){
+                        if(is_callable($formatter[$db_cols[$key_2]])) $the_query_data[$key][$e_db_col] = $formatter[$db_cols[$key_2]]($e_tqde->{$e_db_col}, $e_tqde);
+                        elseif(is_string($formatter[$db_cols[$key_2]])) $the_query_data[$key][$e_db_col] = strtr($formatter[$db_cols[$key_2]], ["{value}"=>$e_tqde->{$e_db_col}]);
                     }else{
                         $the_query_data[$key][$e_db_col] = $e_tqde->{$e_db_col};
                     }
                 }
                 foreach($db_cols_fake as $e_db_col){
-                    $the_query_data[$key][$e_db_col] = $formatter[$e_db_col]($e_tqde);
+                    $the_query_data[$key][$e_db_col] = $formatter[$db_cols[$key_2]]($e_tqde);
                 }
             }
 
@@ -115,7 +127,8 @@ trait SSP{
 
                 $pair_key_column_index = [];
                 foreach($dt_cols as $key=>$dt_col){
-                    $pair_key_column_index[$dt_col['db'] ?? $dt_col['db_fake']] = $key;
+                    if(isset($dt_col['db'])) $pair_key_column_index[$db_cols_final[$key]] = $key;
+                    else $pair_key_column_index[$dt_col['db_fake']] = $key;
                 }
 
                 $new_query_data = [];
