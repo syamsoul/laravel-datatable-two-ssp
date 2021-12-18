@@ -78,7 +78,7 @@ trait SSP{
 
             if($frontend_framework == "datatablejs"){
 
-                $the_query->orderBy($dt_cols[$request->order[0]["column"]], $request->order[0]['dir']);
+                $the_query->orderBy($dt_cols[$request->order[0]["column"]]['db'], $request->order[0]['dir']);
 
                 if($request->length != "-1") $the_query->limit($request->length)->offset($request->start);
 
