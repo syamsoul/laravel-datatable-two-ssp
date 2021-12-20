@@ -41,6 +41,9 @@ trait SSP{
                     if(is_array($dt_col['class'])) $e_fe_dt_col['className'] = implode(" ", $dt_col['class']);
                     else if(is_string($dt_col['class'])) $e_fe_dt_col['className'] = $dt_col['class'];
                 }
+                if(isset($dt_col['orderable'])){
+                    if(is_bool($dt_col['orderable'])) $e_fe_dt_col['orderable'] = $dt_col['orderable'];
+                }
                 array_push($frontend_dt_cols, $e_fe_dt_col);
 
             }elseif($frontend_framework == "vuetify"){
