@@ -118,7 +118,7 @@ trait SSP{
                     }
                 }
                 foreach($db_cols_fake as $e_db_col){
-                    $the_query_data[$key][$e_db_col] = $formatter[$db_cols[$key_2]]($e_tqde);
+                    $the_query_data[$key][$e_db_col] = $formatter[$e_db_col]($e_tqde);
                 }
             }
 
