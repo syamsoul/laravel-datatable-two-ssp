@@ -36,9 +36,12 @@ trait SSP{
         foreach($dt_cols as $dt_col){
             if($frontend_framework == "datatablejs"){
 
-                array_push($frontend_dt_cols, [
-                    'title'=>$dt_col['label']
-                ]);
+                $e_fe_dt_col = ['title'=>$dt_col['label']];
+                if(isset($dt_col['class'])){
+                    if(is_array($dt_col['class'])) $e_fe_dt_col['className'] = implode(" ", $dt_col['class']);
+                    else if(is_string($dt_col['class'])) $e_fe_dt_col['className'] = $dt_col['class'];
+                }
+                array_push($frontend_dt_cols, $e_fe_dt_col);
 
             }elseif($frontend_framework == "vuetify"){
 
