@@ -103,7 +103,7 @@ trait SSP{
             }elseif($frontend_framework == "vuetify"){
 
                 if($request->filled('sortBy') && $request->filled('sortDesc')){
-                    $the_query->orderBy($request->sortBy, ($request->sortDesc == 'true' ? 'desc':'asc'));
+                    $the_query->orderBy($db_cols_mid[array_flip($db_cols_final)[$request->sortBy]], ($request->sortDesc == 'true' ? 'desc':'asc'));
                 }
 
                 if($request->itemsPerPage != "-1") $the_query->limit($request->itemsPerPage)->offset(($request->page - 1) * $request->itemsPerPage);
