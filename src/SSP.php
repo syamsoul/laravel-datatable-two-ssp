@@ -46,12 +46,31 @@ trait SSP{
                 }
                 array_push($frontend_dt_cols, $e_fe_dt_col);
 
-            }elseif($frontend_framework == "vuetify"){
+            }elseif(in_array($frontend_framework, ["vuetify", "others"])){
 
-                array_push($frontend_dt_cols, [
-                    'text' => $dt_col['label'],
-                    'value' => $dt_col['db'] ?? $dt_col['db_fake'],
-                ]);
+                if(isset($dt_col['db'])){
+                    $dt_col_db_arr = explode(" AS ", $dt_col['db']);
+                    if(count($dt_col_db_arr) == 2){
+                        $db_col = $dt_col_db_arr[1];
+                    }else{
+                        $dt_col_db_arr = explode(".", $dt_col['db']);
+                        if(count($dt_col_db_arr) == 2) $db_col = $dt_col_db_arr[1];
+                        else $db_col = $dt_col['db'];
+                    }
+                }elseif(isset($dt_col['db_fake'])) $db_col = $dt_col['db_fake'];
+
+                if($frontend_framework == "vuetify"){
+                    array_push($frontend_dt_cols, [
+                        'text' => $dt_col['label'],
+                        'value' => $db_col,
+                    ]);
+                }elseif($frontend_framework == "others"){
+                    array_push($frontend_dt_cols, [
+                        'label' => $dt_col['label'],
+                        'db' => $db_col,
+                        'class' => $dt_col['class'] ?? [],
+                    ]);
+                }
 
             }
         }
@@ -100,7 +119,7 @@ trait SSP{
 
                 if($request->length != "-1") $the_query->limit($request->length)->offset($request->start);
 
-            }elseif($frontend_framework == "vuetify"){
+            }elseif(in_array($frontend_framework, ["vuetify", "others"])){
 
                 if($request->filled('sortBy') && $request->filled('sortDesc')){
                     $the_query->orderBy($db_cols_mid[array_flip($db_cols_final)[$request->sortBy]], ($request->sortDesc == 'true' ? 'desc':'asc'));
@@ -151,7 +170,7 @@ trait SSP{
                 $ret['recordsTotal'] = $the_query_count;
                 $ret['recordsFiltered'] = $the_query_count; // NOTE: currently filter not functioning yet
 
-            }elseif($frontend_framework == "vuetify"){
+            }elseif(in_array($frontend_framework, ["vuetify", "others"])){
 
                 $ret['data'] = [
                     'items' => $the_query_data,
