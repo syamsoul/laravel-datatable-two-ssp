@@ -2,6 +2,7 @@
 namespace SoulDoit\DataTableTwo;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 trait SSP{
 	/*
@@ -13,6 +14,8 @@ trait SSP{
 	| Website   : https://github.com/syamsoulcc
 	|
 	*/
+	private $arranged_cols_details;
+
 
 	private function dtColumns()
 	{
@@ -85,27 +88,11 @@ trait SSP{
 
 		$frontend_framework = config('sd-datatable-two-ssp.frontend_framework');
 
-		$dt_cols = $this->dtColumns();
-
-		$db_cols = []; $db_cols_mid = []; $db_cols_final = []; $db_cols_fake = []; $formatter = [];
-		foreach($dt_cols as $key=>$dt_col){
-			if(isset($dt_col['db'])){
-				$db_cols[$key] = $dt_col['db'];
-				$dt_col_db_arr = explode(" AS ", $dt_col['db']);
-				if(count($dt_col_db_arr) == 2){
-					$db_cols_final[$key] = $dt_col_db_arr[1];
-					$db_cols_mid[$key] = $dt_col_db_arr[1];
-				}else{
-					$dt_col_db_arr = explode(".", $dt_col['db']);
-					if(count($dt_col_db_arr) == 2) $db_cols_final[$key] = $dt_col_db_arr[1];
-					else $db_cols_final[$key] = $dt_col['db'];
-
-					$db_cols_mid[$key] = $dt_col['db'];
-				}
-			}elseif(isset($dt_col['db_fake'])) $db_cols_fake[$key] = $dt_col['db_fake'];
-
-			if(isset($dt_col['formatter'])) $formatter[$dt_col['db'] ?? $dt_col['db_fake']] = $dt_col['formatter'];
-		}
+		$arranged_cols_details = $this->getArrangedColsDetails();
+		$dt_cols = $arranged_cols_details['dt_cols'];
+		$db_cols = $arranged_cols_details['db_cols'];
+		$db_cols_mid = $arranged_cols_details['db_cols_mid'];
+		$db_cols_final = $arranged_cols_details['db_cols_final'];
 
 		$the_query = $this->dtQuery($db_cols);
 
@@ -129,23 +116,7 @@ trait SSP{
 
 			}
 
-			$the_query_data_eloq = $the_query->get();
-
-			$the_query_data = [];
-			foreach($the_query_data_eloq as $key=>$e_tqde){
-				$the_query_data[$key] = [];
-				foreach($db_cols_final as $key_2=>$e_db_col){
-					if(isset($formatter[$db_cols[$key_2]])){
-						if(is_callable($formatter[$db_cols[$key_2]])) $the_query_data[$key][$e_db_col] = $formatter[$db_cols[$key_2]]($e_tqde->{$e_db_col}, $e_tqde);
-						elseif(is_string($formatter[$db_cols[$key_2]])) $the_query_data[$key][$e_db_col] = strtr($formatter[$db_cols[$key_2]], ["{value}"=>$e_tqde->{$e_db_col}]);
-					}else{
-						$the_query_data[$key][$e_db_col] = $e_tqde->{$e_db_col};
-					}
-				}
-				foreach($db_cols_fake as $e_db_col){
-					$the_query_data[$key][$e_db_col] = $formatter[$e_db_col]($e_tqde);
-				}
-			}
+			$the_query_data = $this->getFormattedData($the_query);
 
 
 			if($frontend_framework == "datatablejs"){
@@ -187,6 +158,52 @@ trait SSP{
 	}
 
 
+	public function dtGtCsvFile()
+	{
+		$lock_name = 'export-csv-'.request()->route()->getName();
+		if(config('sd-datatable-two-ssp.export_to_csv.is_cache_lock_based_on_auth')){
+			$current_user = auth()->user();
+			if(!empty($current_user)) $lock_name .= '-'.$current_user->id;
+		}
+		$lock = Cache::lock($lock_name, 3600); // lock for 1 hour
+
+		$retry_count = 0;
+
+		while(!$lock->get() && $retry_count<5){
+			$retry_count++;
+			usleep(1500000);
+		}
+
+		if($retry_count == 5) abort(408, "Currently, there's another proccess is running. Please try again later.");
+
+		$headers = [
+			'Cache-Control'       => 'must-revalidate, post-check=0, pre-check=0',
+			'Content-type'        => 'text/csv',
+			'Content-Disposition' => 'attachment; filename='.strtr(request()->route()->getName(), ".", "-") ."-".now()->format("YmdHis").'.csv',
+			'Expires'             => '0',
+			'Pragma'              => 'public'
+		];
+
+		$list = $this->getFormattedData($this->dtQuery($this->getArrangedColsDetails()['db_cols']), true);
+
+		// add headers for each column in the CSV download
+		$dt_cols = $this->dtColumns();
+		foreach($dt_cols as $index=>$e_dt_col) if(isset($e_dt_col['is_include_in_doc'])) if(!$e_dt_col['is_include_in_doc']) unset($dt_cols[$index]);
+		array_unshift($list, collect($dt_cols)->pluck('label')->toArray());
+
+		$callback = function() use ($list){
+			$file = fopen('php://output', 'w');
+			foreach ($list as $row) fputcsv($file, $row);
+			fclose($file);
+		};
+
+		$lock->release();
+
+		return response()->stream($callback, 200, $headers);
+
+	}
+
+
 	private function dtGetCount($query=null)
 	{
 		if($query!=null){
@@ -194,5 +211,82 @@ trait SSP{
 		}
 
 		return 0;
+	}
+
+
+	private function getArrangedColsDetails($is_for_doc=false)
+	{
+		if(!$is_for_doc){
+			if($this->arranged_cols_details != null) return $this->arranged_cols_details;
+		}
+
+		$dt_cols = $this->dtColumns();
+
+		$db_cols = []; $db_cols_mid = []; $db_cols_final = []; $db_cols_fake = []; $formatter = [];
+		foreach($dt_cols as $key=>$dt_col){
+			if($is_for_doc) if(isset($dt_col['is_include_in_doc'])) if(!$dt_col['is_include_in_doc']) continue;
+			if(isset($dt_col['db'])){
+				$db_cols[$key] = $dt_col['db'];
+				$dt_col_db_arr = explode(" AS ", $dt_col['db']);
+				if(count($dt_col_db_arr) == 2){
+					$db_cols_final[$key] = $dt_col_db_arr[1];
+					$db_cols_mid[$key] = $dt_col_db_arr[1];
+				}else{
+					$dt_col_db_arr = explode(".", $dt_col['db']);
+					if(count($dt_col_db_arr) == 2) $db_cols_final[$key] = $dt_col_db_arr[1];
+					else $db_cols_final[$key] = $dt_col['db'];
+
+					$db_cols_mid[$key] = $dt_col['db'];
+				}
+			}elseif(isset($dt_col['db_fake'])) $db_cols_fake[$key] = $dt_col['db_fake'];
+
+			if(isset($dt_col['formatter'])) $formatter[$dt_col['db'] ?? $dt_col['db_fake']] = $dt_col['formatter'];
+			if($is_for_doc){
+				if(isset($dt_col['formatter_doc'])) $formatter[$dt_col['db'] ?? $dt_col['db_fake']] = $dt_col['formatter_doc'];
+			}
+		}
+
+		$arranged_cols_details = [
+			'dt_cols' => $dt_cols,
+			'db_cols' => $db_cols,
+			'db_cols_mid' => $db_cols_mid,
+			'db_cols_final' => $db_cols_final,
+			'db_cols_fake' => $db_cols_fake,
+			'formatter' => $formatter,
+		];
+
+		if(!$is_for_doc) $this->arranged_cols_details = $arranged_cols_details;
+
+		return $arranged_cols_details;
+	}
+
+
+	private function getFormattedData($the_query, $is_for_doc=false)
+	{
+		$the_query_data_eloq = $the_query->get();
+
+		$arranged_cols_details = $this->getArrangedColsDetails($is_for_doc);
+		$db_cols = $arranged_cols_details['db_cols'];
+		$db_cols_final = $arranged_cols_details['db_cols_final'];
+		$db_cols_fake = $arranged_cols_details['db_cols_fake'];
+		$formatter = $arranged_cols_details['formatter'];
+
+		$the_query_data = [];
+		foreach($the_query_data_eloq as $key=>$e_tqde){
+			$the_query_data[$key] = [];
+			foreach($db_cols_final as $key_2=>$e_db_col){
+				if(isset($formatter[$db_cols[$key_2]])){
+					if(is_callable($formatter[$db_cols[$key_2]])) $the_query_data[$key][$e_db_col] = $formatter[$db_cols[$key_2]]($e_tqde->{$e_db_col}, $e_tqde);
+					elseif(is_string($formatter[$db_cols[$key_2]])) $the_query_data[$key][$e_db_col] = strtr($formatter[$db_cols[$key_2]], ["{value}"=>$e_tqde->{$e_db_col}]);
+				}else{
+					$the_query_data[$key][$e_db_col] = $e_tqde->{$e_db_col};
+				}
+			}
+			foreach($db_cols_fake as $e_db_col){
+				$the_query_data[$key][$e_db_col] = $formatter[$e_db_col]($e_tqde);
+			}
+		}
+
+		return $the_query_data;
 	}
 }
