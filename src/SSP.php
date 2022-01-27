@@ -4,195 +4,195 @@ namespace SoulDoit\DataTableTwo;
 use Illuminate\Http\Request;
 
 trait SSP{
-    /*
-    |--------------------------------------------------------------------------
-    | DataTable SSP for Laravel
-    |--------------------------------------------------------------------------
-    |
-    | Author    : Syamsoul Azrien Muda (+60139584638)
-    | Website   : https://github.com/syamsoulcc
-    |
-    */
+	/*
+	|--------------------------------------------------------------------------
+	| DataTable SSP for Laravel
+	|--------------------------------------------------------------------------
+	|
+	| Author    : Syamsoul Azrien Muda (+60139584638)
+	| Website   : https://github.com/syamsoulcc
+	|
+	*/
 
-    private function dtColumns()
-    {
-        return [];
-    }
-
-
-    private function dtQuery($selected_columns=null)
-    {
-        return null;
-    }
+	private function dtColumns()
+	{
+		return [];
+	}
 
 
-    private function dtGetFrontEndColumns()
-    {
-        $frontend_framework = config('sd-datatable-two-ssp.frontend_framework');
-
-        $dt_cols = $this->dtColumns();
-
-        $frontend_dt_cols = [];
-        foreach($dt_cols as $dt_col){
-            if($frontend_framework == "datatablejs"){
-
-                $e_fe_dt_col = ['title'=>$dt_col['label']];
-                if(isset($dt_col['class'])){
-                    if(is_array($dt_col['class'])) $e_fe_dt_col['className'] = implode(" ", $dt_col['class']);
-                    else if(is_string($dt_col['class'])) $e_fe_dt_col['className'] = $dt_col['class'];
-                }
-                if(isset($dt_col['orderable'])){
-                    if(is_bool($dt_col['orderable'])) $e_fe_dt_col['orderable'] = $dt_col['orderable'];
-                }
-                array_push($frontend_dt_cols, $e_fe_dt_col);
-
-            }elseif(in_array($frontend_framework, ["vuetify", "others"])){
-
-                if(isset($dt_col['db'])){
-                    $dt_col_db_arr = explode(" AS ", $dt_col['db']);
-                    if(count($dt_col_db_arr) == 2){
-                        $db_col = $dt_col_db_arr[1];
-                    }else{
-                        $dt_col_db_arr = explode(".", $dt_col['db']);
-                        if(count($dt_col_db_arr) == 2) $db_col = $dt_col_db_arr[1];
-                        else $db_col = $dt_col['db'];
-                    }
-                }elseif(isset($dt_col['db_fake'])) $db_col = $dt_col['db_fake'];
-
-                if($frontend_framework == "vuetify"){
-                    array_push($frontend_dt_cols, [
-                        'text' => $dt_col['label'],
-                        'value' => $db_col,
-                    ]);
-                }elseif($frontend_framework == "others"){
-                    array_push($frontend_dt_cols, [
-                        'label' => $dt_col['label'],
-                        'db' => $db_col,
-                        'class' => $dt_col['class'] ?? [],
-                    ]);
-                }
-
-            }
-        }
-
-        return $frontend_dt_cols;
-    }
+	private function dtQuery($selected_columns=null)
+	{
+		return null;
+	}
 
 
-    public function dtGetData(Request $request)
-    {
-        $ret = ['success'=>false];
+	private function dtGetFrontEndColumns()
+	{
+		$frontend_framework = config('sd-datatable-two-ssp.frontend_framework');
 
-        $frontend_framework = config('sd-datatable-two-ssp.frontend_framework');
+		$dt_cols = $this->dtColumns();
 
-        $dt_cols = $this->dtColumns();
+		$frontend_dt_cols = [];
+		foreach($dt_cols as $dt_col){
+			if($frontend_framework == "datatablejs"){
 
-        $db_cols = []; $db_cols_mid = []; $db_cols_final = []; $db_cols_fake = []; $formatter = [];
-        foreach($dt_cols as $key=>$dt_col){
-            if(isset($dt_col['db'])){
-                $db_cols[$key] = $dt_col['db'];
-                $dt_col_db_arr = explode(" AS ", $dt_col['db']);
-                if(count($dt_col_db_arr) == 2){
-                    $db_cols_final[$key] = $dt_col_db_arr[1];
-                    $db_cols_mid[$key] = $dt_col_db_arr[1];
-                }else{
-                    $dt_col_db_arr = explode(".", $dt_col['db']);
-                    if(count($dt_col_db_arr) == 2) $db_cols_final[$key] = $dt_col_db_arr[1];
-                    else $db_cols_final[$key] = $dt_col['db'];
+				$e_fe_dt_col = ['title'=>$dt_col['label']];
+				if(isset($dt_col['class'])){
+					if(is_array($dt_col['class'])) $e_fe_dt_col['className'] = implode(" ", $dt_col['class']);
+					else if(is_string($dt_col['class'])) $e_fe_dt_col['className'] = $dt_col['class'];
+				}
+				if(isset($dt_col['orderable'])){
+					if(is_bool($dt_col['orderable'])) $e_fe_dt_col['orderable'] = $dt_col['orderable'];
+				}
+				array_push($frontend_dt_cols, $e_fe_dt_col);
 
-                    $db_cols_mid[$key] = $dt_col['db'];
-                }
-            }elseif(isset($dt_col['db_fake'])) $db_cols_fake[$key] = $dt_col['db_fake'];
+			}elseif(in_array($frontend_framework, ["vuetify", "others"])){
 
-            if(isset($dt_col['formatter'])) $formatter[$dt_col['db'] ?? $dt_col['db_fake']] = $dt_col['formatter'];
-        }
+				if(isset($dt_col['db'])){
+					$dt_col_db_arr = explode(" AS ", $dt_col['db']);
+					if(count($dt_col_db_arr) == 2){
+						$db_col = $dt_col_db_arr[1];
+					}else{
+						$dt_col_db_arr = explode(".", $dt_col['db']);
+						if(count($dt_col_db_arr) == 2) $db_col = $dt_col_db_arr[1];
+						else $db_col = $dt_col['db'];
+					}
+				}elseif(isset($dt_col['db_fake'])) $db_col = $dt_col['db_fake'];
 
-        $the_query = $this->dtQuery($db_cols);
+				if($frontend_framework == "vuetify"){
+					array_push($frontend_dt_cols, [
+						'text' => $dt_col['label'],
+						'value' => $db_col,
+					]);
+				}elseif($frontend_framework == "others"){
+					array_push($frontend_dt_cols, [
+						'label' => $dt_col['label'],
+						'db' => $db_col,
+						'class' => $dt_col['class'] ?? [],
+					]);
+				}
 
-        if($the_query != null){
+			}
+		}
 
-            $the_query_count = $this->dtGetCount($the_query);
-
-            if($frontend_framework == "datatablejs"){
-
-                $the_query->orderBy($db_cols_mid[$request->order[0]["column"]], $request->order[0]['dir']);
-
-                if($request->length != "-1") $the_query->limit($request->length)->offset($request->start);
-
-            }elseif(in_array($frontend_framework, ["vuetify", "others"])){
-
-                if($request->filled('sortBy') && $request->filled('sortDesc')){
-                    $the_query->orderBy($db_cols_mid[array_flip($db_cols_final)[$request->sortBy]], ($request->sortDesc == 'true' ? 'desc':'asc'));
-                }
-
-                if($request->itemsPerPage != "-1") $the_query->limit($request->itemsPerPage)->offset(($request->page - 1) * $request->itemsPerPage);
-
-            }
-
-            $the_query_data_eloq = $the_query->get();
-
-            $the_query_data = [];
-            foreach($the_query_data_eloq as $key=>$e_tqde){
-                $the_query_data[$key] = [];
-                foreach($db_cols_final as $key_2=>$e_db_col){
-                    if(isset($formatter[$db_cols[$key_2]])){
-                        if(is_callable($formatter[$db_cols[$key_2]])) $the_query_data[$key][$e_db_col] = $formatter[$db_cols[$key_2]]($e_tqde->{$e_db_col}, $e_tqde);
-                        elseif(is_string($formatter[$db_cols[$key_2]])) $the_query_data[$key][$e_db_col] = strtr($formatter[$db_cols[$key_2]], ["{value}"=>$e_tqde->{$e_db_col}]);
-                    }else{
-                        $the_query_data[$key][$e_db_col] = $e_tqde->{$e_db_col};
-                    }
-                }
-                foreach($db_cols_fake as $e_db_col){
-                    $the_query_data[$key][$e_db_col] = $formatter[$e_db_col]($e_tqde);
-                }
-            }
+		return $frontend_dt_cols;
+	}
 
 
-            if($frontend_framework == "datatablejs"){
+	public function dtGetData(Request $request)
+	{
+		$ret = ['success'=>false];
 
-                $pair_key_column_index = [];
-                foreach($dt_cols as $key=>$dt_col){
-                    if(isset($dt_col['db'])) $pair_key_column_index[$db_cols_final[$key]] = $key;
-                    else $pair_key_column_index[$dt_col['db_fake']] = $key;
-                }
+		$frontend_framework = config('sd-datatable-two-ssp.frontend_framework');
 
-                $new_query_data = [];
-                foreach($the_query_data as $key=>$e_tqdata){
-                    $e_new_cols_data = [];
-                    foreach($e_tqdata as $e_e_col_name=>$e_e_col_value){
-                        $e_new_cols_data[$pair_key_column_index[$e_e_col_name]] = $e_e_col_value;
-                    }
-                    $new_query_data[$key] = $e_new_cols_data;
-                }
+		$dt_cols = $this->dtColumns();
 
-                $ret['draw'] = $request->draw ?? 0;
-                $ret['data'] = $new_query_data;
-                $ret['recordsTotal'] = $the_query_count;
-                $ret['recordsFiltered'] = $the_query_count; // NOTE: currently filter not functioning yet
+		$db_cols = []; $db_cols_mid = []; $db_cols_final = []; $db_cols_fake = []; $formatter = [];
+		foreach($dt_cols as $key=>$dt_col){
+			if(isset($dt_col['db'])){
+				$db_cols[$key] = $dt_col['db'];
+				$dt_col_db_arr = explode(" AS ", $dt_col['db']);
+				if(count($dt_col_db_arr) == 2){
+					$db_cols_final[$key] = $dt_col_db_arr[1];
+					$db_cols_mid[$key] = $dt_col_db_arr[1];
+				}else{
+					$dt_col_db_arr = explode(".", $dt_col['db']);
+					if(count($dt_col_db_arr) == 2) $db_cols_final[$key] = $dt_col_db_arr[1];
+					else $db_cols_final[$key] = $dt_col['db'];
 
-            }elseif(in_array($frontend_framework, ["vuetify", "others"])){
+					$db_cols_mid[$key] = $dt_col['db'];
+				}
+			}elseif(isset($dt_col['db_fake'])) $db_cols_fake[$key] = $dt_col['db_fake'];
 
-                $ret['data'] = [
-                    'items' => $the_query_data,
-                    'total_item_count' => $the_query_count,
-                ];
+			if(isset($dt_col['formatter'])) $formatter[$dt_col['db'] ?? $dt_col['db_fake']] = $dt_col['formatter'];
+		}
 
-            }
+		$the_query = $this->dtQuery($db_cols);
 
-            $ret['success'] = true;
+		if($the_query != null){
 
-        }
+			$the_query_count = $this->dtGetCount($the_query);
 
-        return response()->json($ret);
-    }
+			if($frontend_framework == "datatablejs"){
+
+				$the_query->orderBy($db_cols_mid[$request->order[0]["column"]], $request->order[0]['dir']);
+
+				if($request->length != "-1") $the_query->limit($request->length)->offset($request->start);
+
+			}elseif(in_array($frontend_framework, ["vuetify", "others"])){
+
+				if($request->filled('sortBy') && $request->filled('sortDesc')){
+					$the_query->orderBy($db_cols_mid[array_flip($db_cols_final)[$request->sortBy]], ($request->sortDesc == 'true' ? 'desc':'asc'));
+				}
+
+				if($request->itemsPerPage != "-1") $the_query->limit($request->itemsPerPage)->offset(($request->page - 1) * $request->itemsPerPage);
+
+			}
+
+			$the_query_data_eloq = $the_query->get();
+
+			$the_query_data = [];
+			foreach($the_query_data_eloq as $key=>$e_tqde){
+				$the_query_data[$key] = [];
+				foreach($db_cols_final as $key_2=>$e_db_col){
+					if(isset($formatter[$db_cols[$key_2]])){
+						if(is_callable($formatter[$db_cols[$key_2]])) $the_query_data[$key][$e_db_col] = $formatter[$db_cols[$key_2]]($e_tqde->{$e_db_col}, $e_tqde);
+						elseif(is_string($formatter[$db_cols[$key_2]])) $the_query_data[$key][$e_db_col] = strtr($formatter[$db_cols[$key_2]], ["{value}"=>$e_tqde->{$e_db_col}]);
+					}else{
+						$the_query_data[$key][$e_db_col] = $e_tqde->{$e_db_col};
+					}
+				}
+				foreach($db_cols_fake as $e_db_col){
+					$the_query_data[$key][$e_db_col] = $formatter[$e_db_col]($e_tqde);
+				}
+			}
 
 
-    private function dtGetCount($query=null)
-    {
-        if($query!=null){
-            return $query->count();
-        }
+			if($frontend_framework == "datatablejs"){
 
-        return 0;
-    }
+				$pair_key_column_index = [];
+				foreach($dt_cols as $key=>$dt_col){
+					if(isset($dt_col['db'])) $pair_key_column_index[$db_cols_final[$key]] = $key;
+					else $pair_key_column_index[$dt_col['db_fake']] = $key;
+				}
+
+				$new_query_data = [];
+				foreach($the_query_data as $key=>$e_tqdata){
+					$e_new_cols_data = [];
+					foreach($e_tqdata as $e_e_col_name=>$e_e_col_value){
+						$e_new_cols_data[$pair_key_column_index[$e_e_col_name]] = $e_e_col_value;
+					}
+					$new_query_data[$key] = $e_new_cols_data;
+				}
+
+				$ret['draw'] = $request->draw ?? 0;
+				$ret['data'] = $new_query_data;
+				$ret['recordsTotal'] = $the_query_count;
+				$ret['recordsFiltered'] = $the_query_count; // NOTE: currently filter not functioning yet
+
+			}elseif(in_array($frontend_framework, ["vuetify", "others"])){
+
+				$ret['data'] = [
+					'items' => $the_query_data,
+					'total_item_count' => $the_query_count,
+				];
+
+			}
+
+			$ret['success'] = true;
+
+		}
+
+		return response()->json($ret);
+	}
+
+
+	private function dtGetCount($query=null)
+	{
+		if($query!=null){
+			return $query->count();
+		}
+
+		return 0;
+	}
 }
