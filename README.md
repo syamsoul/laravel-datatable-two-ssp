@@ -5,8 +5,16 @@
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/syamsoul/laravel-datatable-two-ssp.svg?style=flat-square)](https://packagist.org/packages/syamsoul/laravel-datatable-two-ssp)
 
 
+## Documentation, Installation and Usage Instructions
 
-This package allows you to manage your DataTable from server-side in Laravel app (improved version of ([old SoulDoit DataTable SSP](https://github.com/syamsoul/laravel-datatable-ssp)).
+See the [documentation](https://info.souldoit.com/laravel-datatable-two-ssp) for detailed installation and usage instructions.
+
+
+&nbsp;
+&nbsp;
+## Introduction
+
+This package allows you to manage your DataTable from server-side in Laravel app (improved version of [old SoulDoit DataTable SSP](https://github.com/syamsoul/laravel-datatable-ssp)).
 
 
 &nbsp;
@@ -81,31 +89,31 @@ class UserListController extends Controller
 ## Example
 
 ```php
-    namespace App\Http\Controllers;
+namespace App\Http\Controllers;
 
-    use App\Http\Controllers\Controller;
-    use SoulDoit\DataTableTwo\SSP;
+use App\Http\Controllers\Controller;
+use SoulDoit\DataTableTwo\SSP;
 
-    class UserListController extends Controller
+class UserListController extends Controller
+{
+    use SSP;
+
+    protected function dtColumns()
     {
-        use SSP;
-
-        protected function dtColumns()
-        {
-            return [
-                ['label'=>'ID',         'db'=>'id'          ],
-                ['label'=>'Email',      'db'=>'email'       ],
-                ['label'=>'Username',   'db'=>'username'    ],
-                ['label'=>'Created At', 'db'=>'created_at'  ],
-            ];
-        }
-
-
-        protected function dtQuery($selected_columns)
-        {
-            return \App\Models\User::select($selected_columns);
-        }
+        return [
+            ['label'=>'ID',         'db'=>'id'          ],
+            ['label'=>'Email',      'db'=>'email'       ],
+            ['label'=>'Username',   'db'=>'username'    ],
+            ['label'=>'Created At', 'db'=>'created_at'  ],
+        ];
     }
+
+
+    protected function dtQuery($selected_columns)
+    {
+        return \App\Models\User::select($selected_columns);
+    }
+}
 ```
 
 &nbsp;
