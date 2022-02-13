@@ -13,7 +13,7 @@ This package allows you to manage your DataTable from server-side in Laravel app
 * [Requirement](#requirement)
 * [Installation](#installation)
 * [Usage & Reference](#usage--reference)
-	* [How to use it?](#how-to-use-it)
+* [How to use it?](#how-to-use-it)
 * [Example](#example)
 
 
@@ -73,51 +73,51 @@ use SoulDoit\DataTableTwo\SSP;
 
 class UserListController extends Controller
 {
-	use SSP;
-```
+    use SSP;
+    ```
 
-&nbsp;
-&nbsp;
-## Example
+    &nbsp;
+    &nbsp;
+    ## Example
 
-```php
-namespace App\Http\Controllers;
+    ```php
+    namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use SoulDoit\DataTableTwo\SSP;
+    use App\Http\Controllers\Controller;
+    use SoulDoit\DataTableTwo\SSP;
 
-class UserListController extends Controller
-{
-	use SSP;
+    class UserListController extends Controller
+    {
+        use SSP;
 
-	protected function dtColumns()
-	{
-		return [
-			['label'=>'ID',         'db'=>'id'          ],
-			['label'=>'Email',      'db'=>'email'       ],
-			['label'=>'Username',   'db'=>'username'    ],
-			['label'=>'Created At', 'db'=>'created_at'  ],
-		];
-	}
+        protected function dtColumns()
+        {
+            return [
+                ['label'=>'ID',         'db'=>'id'          ],
+                ['label'=>'Email',      'db'=>'email'       ],
+                ['label'=>'Username',   'db'=>'username'    ],
+                ['label'=>'Created At', 'db'=>'created_at'  ],
+            ];
+        }
+        
 
+        protected function dtQuery($selected_columns)
+        {
+            return \App\Models\User::select($selected_columns);
+        }
+    }
+    ```
 
-	protected function dtQuery($selected_columns)
-	{
-		return \App\Models\User::select($selected_columns);
-	}
-}
-```
+    &nbsp;
+    &nbsp;
+    ## Support me
 
-&nbsp;
-&nbsp;
-## Support me
+    Please support me and I will contribute more code.
 
-Please support me and I will contribute more code.
+    Please [make a donation](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=syamsoulazrien.miat@gmail.com&lc=US&item_name=Support%20me%20and%20I%20will%20contribute%20more&no_note=0&cn=&curency_code=USD&bn=PP-DonationsBF:btn_donateCC_LG.gif:NonHosted).
 
-Please [make a donation](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=syamsoulazrien.miat@gmail.com&lc=US&item_name=Support%20me%20and%20I%20will%20contribute%20more&no_note=0&cn=&curency_code=USD&bn=PP-DonationsBF:btn_donateCC_LG.gif:NonHosted).
+    &nbsp;
+    &nbsp;
+    ## License
 
-&nbsp;
-&nbsp;
-## License
-
-The MIT License (MIT). Please see [License File](LICENSE) for more information.
+    The MIT License (MIT). Please see [License File](LICENSE) for more information.
