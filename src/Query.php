@@ -72,7 +72,8 @@ trait Query{
 
 	private function querySearch($the_query)
 	{
-		if(!$this->is_search_enable) return $the_query;
+		$is_search_enable = isset($this->is_search_enable) ? $this->is_search_enable : false;
+		if(!$is_search_enable) return $the_query;
 
 		$request = request();
 		$frontend_framework = config('sd-datatable-two-ssp.frontend_framework');

@@ -9,7 +9,6 @@ use SoulDoit\DataTableTwo\Query;
 trait SSP{
 	use Query;
 
-	private $is_search_enable = false;
 	private $arranged_cols_details;
 
 
