@@ -35,7 +35,7 @@ trait SSP{
                 }
 
                 $e_fe_dt_col['orderable'] = (!isset($dt_col['db']) && isset($dt_col['db_fake'])) ? false : (isset($dt_col['sortable']) ? $dt_col['sortable'] : true);
-                
+
                 array_push($frontend_dt_cols, $e_fe_dt_col);
 
             }elseif(in_array($frontend_framework, ["vuetify", "others"])){
@@ -88,13 +88,14 @@ trait SSP{
 
         if($the_query != null){
 
-            $the_query_count = $this->dtGetCount($the_query);
+            $the_query_count = $the_query->count();
 
             $the_query = $this->queryOrder($the_query);
-            $the_query = $this->queryPagination($the_query);
             $the_query = $this->querySearch($the_query);
 
-            $the_query_filtered_count = $this->dtGetCount($the_query);
+            $the_query_filtered_count = $the_query->count();
+
+            $the_query = $this->queryPagination($the_query);
 
             $the_query_data = $this->getFormattedData($the_query);
 

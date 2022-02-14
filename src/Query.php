@@ -8,16 +8,6 @@ trait Query{
     }
 
 
-    private function dtGetCount($query=null)
-    {
-        if($query!=null){
-            return $query->count();
-        }
-
-        return 0;
-    }
-
-
     private function queryOrder($the_query)
     {
         $request = request();
