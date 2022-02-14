@@ -61,7 +61,7 @@ trait SSP{
 						'label' => $dt_col['label'],
 						'db' => $db_col,
 						'class' => $dt_col['class'] ?? [],
-                        'sortable' => (!isset($dt_col['db']) && isset($dt_col['db_fake'])) ? false : true,
+                        'sortable' => (!isset($dt_col['db']) && isset($dt_col['db_fake'])) ? false : (isset($dt_col['sortable']) ? $dt_col['sortable'] : true),
 					]);
 				}
 
