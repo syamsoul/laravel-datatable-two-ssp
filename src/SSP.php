@@ -9,12 +9,19 @@ use SoulDoit\DataTableTwo\Query;
 trait SSP{
     use Query;
 
+    private $dt_columns;
     private $arranged_cols_details;
 
 
     private function dtColumns()
     {
-        return [];
+        return $this->dt_columns;
+    }
+
+
+    private function setDtColumns(array $dt_columns)
+    {
+        $this->dt_columns = $dt_columns;
     }
 
 

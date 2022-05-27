@@ -2,9 +2,17 @@
 namespace SoulDoit\DataTableTwo;
 
 trait Query{
+    private $dt_query;
+
     private function dtQuery($selected_columns=null)
     {
-        return null;
+        return is_callable($this->dt_query) ? ($this->dt_query)($selected_columns) : $this->dt_query;
+    }
+
+
+    private function setDtQuery($dt_query)
+    {
+        $this->dt_query = $dt_query;
     }
 
 
