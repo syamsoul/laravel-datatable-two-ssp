@@ -3,6 +3,7 @@ namespace SoulDoit\DataTableTwo;
 
 trait Query{
     private $dt_query;
+    private $query_count;
 
     private function dtQuery($selected_columns=null)
     {
@@ -10,9 +11,22 @@ trait Query{
     }
 
 
+    private function queryCount($the_query)
+    {
+        if($this->query_count == null) return $the_query->count();
+        return is_callable($this->query_count) ? ($this->query_count)($the_query) : $this->query_count;
+    }
+
+
     private function setDtQuery($dt_query)
     {
         $this->dt_query = $dt_query;
+    }
+
+
+    private function setQueryCount($query_count)
+    {
+        $this->query_count = $query_count;
     }
 
 
