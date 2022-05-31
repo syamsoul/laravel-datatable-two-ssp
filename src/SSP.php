@@ -48,7 +48,7 @@ trait SSP{
             }elseif(in_array($frontend_framework, ["vuetify", "others"])){
 
                 if(isset($dt_col['db'])){
-                    $dt_col_db_arr = explode(" AS ", $dt_col['db']);
+                    $dt_col_db_arr = explode(" as ", strtolower($dt_col['db']));
                     if(count($dt_col_db_arr) == 2){
                         $db_col = $dt_col_db_arr[1];
                     }else{
@@ -210,7 +210,7 @@ trait SSP{
             if($is_for_doc) if(isset($dt_col['is_include_in_doc'])) if(!$dt_col['is_include_in_doc']) continue;
             if(isset($dt_col['db'])){
                 $db_cols[$key] = $dt_col['db'];
-                $dt_col_db_arr = explode(" AS ", $dt_col['db']);
+                $dt_col_db_arr = explode(" as ", strtolower($dt_col['db']));
                 if(count($dt_col_db_arr) == 2){
                     $db_cols_final[$key] = $dt_col_db_arr[1];
                     $db_cols_mid[$key] = $dt_col_db_arr[1];
