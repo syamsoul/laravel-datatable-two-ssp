@@ -4,6 +4,7 @@ namespace SoulDoit\DataTableTwo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use SoulDoit\DataTableTwo\Exceptions\RawExpressionMustHaveAliasName;
 use SoulDoit\DataTableTwo\Query;
 
 trait SSP{
@@ -97,11 +98,11 @@ trait SSP{
 
             $the_query_count = $the_query->count();
 
-            $the_query = $this->queryOrder($the_query);
             $the_query = $this->querySearch($the_query);
 
             $the_query_filtered_count = $the_query->count();
 
+            $the_query = $this->queryOrder($the_query);
             $the_query = $this->queryPagination($the_query);
 
             $the_query_data = $this->getFormattedData($the_query);
@@ -210,13 +211,21 @@ trait SSP{
             if($is_for_doc) if(isset($dt_col['is_include_in_doc'])) if(!$dt_col['is_include_in_doc']) continue;
             if(isset($dt_col['db'])){
                 $db_cols[$key] = $dt_col['db'];
-                $dt_col_db_arr = explode(" as ", strtolower($dt_col['db']));
+
+                $is_db_raw = ($dt_col['db'] instanceof \Illuminate\Database\Query\Expression);
+
+                if($is_db_raw) $dt_col_db_arr = explode(" as ", strtolower($dt_col['db']->getValue()));
+                else $dt_col_db_arr = explode(" as ", strtolower($dt_col['db']));
+
                 if(count($dt_col_db_arr) == 2){
-                    $db_cols_final[$key] = $dt_col_db_arr[1];
-                    $db_cols_mid[$key] = $dt_col_db_arr[1];
-                    $db_cols_initial[$key] = $dt_col_db_arr[0];
+                    $db_cols_final[$key] = $is_db_raw ? str_replace("`", "", $dt_col_db_arr[1]) : $dt_col_db_arr[1];
+                    $db_cols_mid[$key] = $is_db_raw ? str_replace("`", "", $dt_col_db_arr[1]) : $dt_col_db_arr[1];
+                    $db_cols_initial[$key] = $is_db_raw ? DB::raw($dt_col_db_arr[0]) : $dt_col_db_arr[0];
                 }else{
+                    if($is_db_raw) throw RawExpressionMustHaveAliasName::create($dt_col['db']->getValue());
+
                     $dt_col_db_arr = explode(".", $dt_col['db']);
+
                     if(count($dt_col_db_arr) == 2) $db_cols_final[$key] = $dt_col_db_arr[1];
                     else $db_cols_final[$key] = $dt_col['db'];
 
@@ -225,9 +234,9 @@ trait SSP{
                 }
             }elseif(isset($dt_col['db_fake'])) $db_cols_fake[$key] = $dt_col['db_fake'];
 
-            if(isset($dt_col['formatter'])) $formatter[$dt_col['db'] ?? $dt_col['db_fake']] = $dt_col['formatter'];
+            if(isset($dt_col['formatter'])) $formatter[$key] = $dt_col['formatter'];
             if($is_for_doc){
-                if(isset($dt_col['formatter_doc'])) $formatter[$dt_col['db'] ?? $dt_col['db_fake']] = $dt_col['formatter_doc'];
+                if(isset($dt_col['formatter_doc'])) $formatter[$key] = $dt_col['formatter_doc'];
             }
         }
 
@@ -261,15 +270,15 @@ trait SSP{
         foreach($the_query_data_eloq as $key=>$e_tqde){
             $the_query_data[$key] = [];
             foreach($db_cols_final as $key_2=>$e_db_col){
-                if(isset($formatter[$db_cols[$key_2]])){
-                    if(is_callable($formatter[$db_cols[$key_2]])) $the_query_data[$key][$e_db_col] = $formatter[$db_cols[$key_2]]($e_tqde->{$e_db_col}, $e_tqde);
-                    elseif(is_string($formatter[$db_cols[$key_2]])) $the_query_data[$key][$e_db_col] = strtr($formatter[$db_cols[$key_2]], ["{value}"=>$e_tqde->{$e_db_col}]);
+                if(isset($formatter[$key_2])){
+                    if(is_callable($formatter[$key_2])) $the_query_data[$key][$e_db_col] = $formatter[$key_2]($e_tqde->{$e_db_col}, $e_tqde);
+                    elseif(is_string($formatter[$key_2])) $the_query_data[$key][$e_db_col] = strtr($formatter[$key_2], ["{value}"=>$e_tqde->{$e_db_col}]);
                 }else{
                     $the_query_data[$key][$e_db_col] = $e_tqde->{$e_db_col};
                 }
             }
-            foreach($db_cols_fake as $e_db_col){
-                $the_query_data[$key][$e_db_col] = $formatter[$e_db_col]($e_tqde);
+            foreach($db_cols_fake as $key_2=>$e_db_col){
+                $the_query_data[$key][$e_db_col] = $formatter[$key_2]($e_tqde);
             }
         }
 
