@@ -49,10 +49,16 @@ trait SSP{
             }elseif(in_array($frontend_framework, ["vuetify", "others"])){
 
                 if(isset($dt_col['db'])){
-                    $dt_col_db_arr = explode(" as ", strtolower($dt_col['db']));
+                    $is_db_raw = ($dt_col['db'] instanceof \Illuminate\Database\Query\Expression);
+
+                    if($is_db_raw) $dt_col_db_arr = explode(" as ", strtolower($dt_col['db']->getValue()));
+                    else $dt_col_db_arr = explode(" as ", strtolower($dt_col['db']));
+
                     if(count($dt_col_db_arr) == 2){
-                        $db_col = $dt_col_db_arr[1];
+                        $db_col = $is_db_raw ? str_replace("`", "", $dt_col_db_arr[1]) : $dt_col_db_arr[1];
                     }else{
+                        if($is_db_raw) throw RawExpressionMustHaveAliasName::create($dt_col['db']->getValue());
+
                         $dt_col_db_arr = explode(".", $dt_col['db']);
                         if(count($dt_col_db_arr) == 2) $db_col = $dt_col_db_arr[1];
                         else $db_col = $dt_col['db'];
