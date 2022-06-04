@@ -106,7 +106,7 @@ trait SSP{
 
             $the_query = $this->querySearch($the_query);
 
-            $the_query_filtered_count = $this->queryCount($the_query);
+            $the_query_filtered_count = empty($this->getSearchValue()) ? $the_query_count : $this->queryCount($the_query);
 
             $the_query = $this->queryOrder($the_query);
             $the_query = $this->queryPagination($the_query);

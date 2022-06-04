@@ -84,8 +84,30 @@ trait Query{
 
     private function querySearch($the_query)
     {
+        $search_value = $this->getSearchValue();
+
+        if(!empty($search_value)){
+            $arranged_cols_details = $this->getArrangedColsDetails();
+            $db_cols_initial = $arranged_cols_details['db_cols_initial'];
+            $db_cols_mid = $arranged_cols_details['db_cols_mid'];
+            $db_cols_final = $arranged_cols_details['db_cols_final'];
+
+            $the_query = $the_query->where(function($query) use($db_cols_initial, $search_value){
+                foreach($db_cols_initial as $index=>$e_col){
+                    if($index == 0) $query->where($e_col, 'LIKE', "%".$search_value."%");
+                    else $query->orWhere($e_col, 'LIKE', "%".$search_value."%");
+                }
+            });
+        }
+
+        return $the_query;
+    }
+
+
+    private function getSearchValue()
+    {
         $is_search_enable = isset($this->is_search_enable) ? $this->is_search_enable : false;
-        if(!$is_search_enable) return $the_query;
+        if(!$is_search_enable) return '';
 
         $request = request();
         $frontend_framework = config('sd-datatable-two-ssp.frontend_framework');
@@ -106,20 +128,6 @@ trait Query{
 
         }
 
-        if(!empty($search_value)){
-            $arranged_cols_details = $this->getArrangedColsDetails();
-            $db_cols_initial = $arranged_cols_details['db_cols_initial'];
-            $db_cols_mid = $arranged_cols_details['db_cols_mid'];
-            $db_cols_final = $arranged_cols_details['db_cols_final'];
-
-            $the_query = $the_query->where(function($query) use($db_cols_initial, $search_value){
-                foreach($db_cols_initial as $index=>$e_col){
-                    if($index == 0) $query->where($e_col, 'LIKE', "%".$search_value."%");
-                    else $query->orWhere($e_col, 'LIKE', "%".$search_value."%");
-                }
-            });
-        }
-
-        return $the_query;
+        return $search_value;
     }
 }
