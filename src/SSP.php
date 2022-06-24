@@ -181,8 +181,8 @@ trait SSP{
 
         $the_query = $this->dtQuery($this->getArrangedColsDetails()['db_cols']);
 
-        $the_query = $this->queryOrder($the_query);
         $the_query = $this->querySearch($the_query);
+        $the_query = $this->queryOrder($the_query);
 
         $the_query_data = $this->getFormattedData($the_query, true);
 
