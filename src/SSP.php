@@ -5,6 +5,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use SoulDoit\DataTableTwo\Exceptions\RawExpressionMustHaveAliasName;
+use SoulDoit\DataTableTwo\Exceptions\ValueInCsvColumnsMustBeString;
 use SoulDoit\DataTableTwo\Query;
 
 trait SSP{
@@ -190,6 +191,14 @@ trait SSP{
         $dt_cols = $this->dtColumns();
         foreach($dt_cols as $index=>$e_dt_col) if(isset($e_dt_col['is_include_in_doc'])) if(!$e_dt_col['is_include_in_doc']) unset($dt_cols[$index]);
         array_unshift($the_query_data, collect($dt_cols)->pluck('label')->toArray());
+
+        //check if value in each columns is string
+        foreach ($the_query_data as $row){
+            foreach($row as $e_col) if(!is_string($e_col) && !is_numeric($e_col)){
+                $lock->release();
+                throw ValueInCsvColumnsMustBeString::create(json_encode($e_col));
+            }
+        }
 
         $callback = function() use ($the_query_data){
             $file = fopen('php://output', 'w');
