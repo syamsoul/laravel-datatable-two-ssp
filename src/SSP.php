@@ -13,6 +13,7 @@ trait SSP{
 
     private $dt_columns;
     private $arranged_cols_details;
+    private $db_fake_identifier = '||-----FAKE-----||';
 
 
     private function dtColumns()
@@ -96,7 +97,6 @@ trait SSP{
         $arranged_cols_details = $this->getArrangedColsDetails();
         $dt_cols = $arranged_cols_details['dt_cols'];
         $db_cols = $arranged_cols_details['db_cols'];
-        $db_cols_mid = $arranged_cols_details['db_cols_mid'];
         $db_cols_final = $arranged_cols_details['db_cols_final'];
 
         $the_query = $this->dtQuery($db_cols);
@@ -221,7 +221,7 @@ trait SSP{
 
         $dt_cols = $this->dtColumns();
 
-        $db_cols = []; $db_cols_initial = []; $db_cols_mid = []; $db_cols_final = []; $db_cols_fake = []; $formatter = [];
+        $db_cols = []; $db_cols_initial = []; $db_cols_mid = []; $db_cols_final = []; $formatter = [];
         foreach($dt_cols as $key=>$dt_col){
             if($is_for_doc) if(isset($dt_col['is_include_in_doc'])) if(!$dt_col['is_include_in_doc']) continue;
             if(isset($dt_col['db'])){
@@ -247,7 +247,11 @@ trait SSP{
                     $db_cols_mid[$key] = $dt_col['db'];
                     $db_cols_initial[$key] = $dt_col['db'];
                 }
-            }elseif(isset($dt_col['db_fake'])) $db_cols_fake[$key] = $dt_col['db_fake'];
+            }elseif(isset($dt_col['db_fake'])){
+                $db_cols_final[$key] = $dt_col['db_fake'] . $this->db_fake_identifier;
+                $db_cols_mid[$key] = $dt_col['db_fake'] . $this->db_fake_identifier;
+                $db_cols_initial[$key] = $dt_col['db_fake'] . $this->db_fake_identifier;
+            }
 
             if(isset($dt_col['formatter'])) $formatter[$key] = $dt_col['formatter'];
             if($is_for_doc){
@@ -261,7 +265,6 @@ trait SSP{
             'db_cols_initial' => $db_cols_initial,
             'db_cols_mid' => $db_cols_mid,
             'db_cols_final' => $db_cols_final,
-            'db_cols_fake' => $db_cols_fake,
             'formatter' => $formatter,
         ];
 
@@ -278,22 +281,24 @@ trait SSP{
         $arranged_cols_details = $this->getArrangedColsDetails($is_for_doc);
         $db_cols = $arranged_cols_details['db_cols'];
         $db_cols_final = $arranged_cols_details['db_cols_final'];
-        $db_cols_fake = $arranged_cols_details['db_cols_fake'];
         $formatter = $arranged_cols_details['formatter'];
 
         $the_query_data = [];
         foreach($the_query_data_eloq as $key=>$e_tqde){
             $the_query_data[$key] = [];
             foreach($db_cols_final as $key_2=>$e_db_col){
-                if(isset($formatter[$key_2])){
-                    if(is_callable($formatter[$key_2])) $the_query_data[$key][$e_db_col] = $formatter[$key_2]($e_tqde->{$e_db_col}, $e_tqde);
-                    elseif(is_string($formatter[$key_2])) $the_query_data[$key][$e_db_col] = strtr($formatter[$key_2], ["{value}"=>$e_tqde->{$e_db_col}]);
+                $e_db_col_filtered = trim(str_replace($this->db_fake_identifier, "", $e_db_col));
+                if(strpos($e_db_col, $this->db_fake_identifier) !== false){
+                    $the_query_data[$key][$e_db_col_filtered] = $formatter[$key_2]($e_tqde);
                 }else{
-                    $the_query_data[$key][$e_db_col] = $e_tqde->{$e_db_col};
+                    if(isset($formatter[$key_2])){
+                        if(is_callable($formatter[$key_2])) $the_query_data[$key][$e_db_col_filtered] = $formatter[$key_2]($e_tqde->{$e_db_col_filtered}, $e_tqde);
+                        elseif(is_string($formatter[$key_2])) $the_query_data[$key][$e_db_col_filtered] = strtr($formatter[$key_2], ["{value}"=>$e_tqde->{$e_db_col_filtered}]);
+                    }else{
+                        $the_query_data[$key][$e_db_col_filtered] = $e_tqde->{$e_db_col_filtered};
+                    }
                 }
-            }
-            foreach($db_cols_fake as $key_2=>$e_db_col){
-                $the_query_data[$key][$e_db_col] = $formatter[$key_2]($e_tqde);
+                if($is_for_doc) $the_query_data[$key][$e_db_col_filtered] = strip_tags($the_query_data[$key][$e_db_col_filtered]);
             }
         }
 
