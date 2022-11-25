@@ -20,6 +20,11 @@ class DateTimeModifier{
         self::$timezone = $timezone;
     }
 
+    public static function getTimezone()
+    {
+        return self::$timezone;
+    }
+
     public static function getDateTimeCarbon($datetime)
     {
         if($datetime instanceof \Carbon\Carbon) return $datetime->copy()->tz(self::$timezone);
