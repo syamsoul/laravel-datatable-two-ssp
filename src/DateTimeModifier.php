@@ -10,7 +10,7 @@ class DateTimeModifier{
     public static function construct()
     {
         if(!self::$is_constructed){
-            self::$timezone = config('sd-datatable-two-ssp.default_modifier_timezone');
+            self::$timezone = config('sd-datatable-two-ssp.default_modifier_timezone', 'UTC');
             self::$is_constructed = true;
         }
     }
