@@ -15,6 +15,11 @@ class DateTimeModifier{
         }
     }
 
+    public static function setTimezone($timezone)
+    {
+        self::$timezone = $timezone;
+    }
+
     public static function getDateTimeCarbon($datetime)
     {
         if($datetime instanceof \Carbon\Carbon) return $datetime->copy()->tz(self::$timezone);
@@ -28,7 +33,7 @@ class DateTimeModifier{
         if($timezone_from) $from_datetime_carbon = now($timezone_from);
         else $from_datetime_carbon = now();
 
-        return DB::raw("CONVERT_TZ($value, '".$timezone_from->format("P")."', '".now(self::$timezone)->format("P")."')");
+        return DB::raw("CONVERT_TZ($value, '".$from_datetime_carbon->format("P")."', '".now(self::$timezone)->format("P")."')");
     }
 }
 
