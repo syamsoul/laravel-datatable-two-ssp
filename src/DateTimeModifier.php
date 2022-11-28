@@ -38,7 +38,12 @@ class DateTimeModifier{
         if($timezone_from) $from_datetime_carbon = now($timezone_from);
         else $from_datetime_carbon = now();
 
-        return DB::raw("CONVERT_TZ($value, '".$from_datetime_carbon->format("P")."', '".now(self::$timezone)->format("P")."')");
+        return "CONVERT_TZ($value, '".$from_datetime_carbon->format("P")."', '".now(self::$timezone)->format("P")."')";
+    }
+
+    public static function getMysqlQueryTzRawDB($value, $timezone_from=null)
+    {
+        return DB::raw(self::getMysqlQueryTzRaw($value, $timezone_from));
     }
 }
 
