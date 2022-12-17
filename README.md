@@ -7,7 +7,7 @@
 
 ## Documentation, Installation and Usage Instructions
 
-See the [documentation](https://info.souldoit.com/laravel-datatable-two-ssp) for detailed installation and usage instructions.
+See the [documentation](https://info.souldoit.com/projects/laravel-datatable-two-ssp) for detailed installation and usage instructions.
 
 
 &nbsp;
