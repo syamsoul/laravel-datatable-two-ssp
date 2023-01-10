@@ -4,6 +4,7 @@ namespace SoulDoit\DataTableTwo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Eloquent\Builder;
 use SoulDoit\DataTableTwo\Exceptions\RawExpressionMustHaveAliasName;
 use SoulDoit\DataTableTwo\Exceptions\ValueInCsvColumnsMustBeString;
 use SoulDoit\DataTableTwo\Query;
@@ -16,7 +17,7 @@ trait SSP{
     private $db_fake_identifier = '||-----FAKE-----||';
 
 
-    private function dtColumns()
+    private function dtColumns() : array
     {
         return $this->dt_columns;
     }
@@ -28,7 +29,7 @@ trait SSP{
     }
 
 
-    private function dtGetFrontEndColumns()
+    private function dtGetFrontEndColumns() : array
     {
         $frontend_framework = config('sd-datatable-two-ssp.frontend_framework');
 
@@ -209,11 +210,10 @@ trait SSP{
         $lock->release();
 
         return response()->stream($callback, 200, $headers);
-
     }
 
 
-    private function getArrangedColsDetails($is_for_doc=false)
+    private function getArrangedColsDetails(bool $is_for_doc = false) : array
     {
         if(!$is_for_doc){
             if($this->arranged_cols_details != null) return $this->arranged_cols_details;
@@ -274,7 +274,7 @@ trait SSP{
     }
 
 
-    private function getFormattedData($the_query, $is_for_doc=false)
+    private function getFormattedData(Builder $the_query, bool $is_for_doc = false) : array
     {
         $the_query_data_eloq = $the_query->get();
 

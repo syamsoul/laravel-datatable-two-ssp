@@ -2,6 +2,7 @@
 namespace SoulDoit\DataTableTwo;
 
 use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Query\Expression;
 
 class DateTimeModifier{
     private static $is_constructed=false;
@@ -15,25 +16,27 @@ class DateTimeModifier{
         }
     }
 
-    public static function setTimezone($timezone)
+    public static function setTimezone(string $timezone)
     {
         self::$timezone = $timezone;
     }
 
-    public static function getTimezone()
+    public static function getTimezone() : string
     {
         return self::$timezone;
     }
 
-    public static function getDateTimeCarbon($datetime)
+    public static function getDateTimeCarbon($datetime = null)
     {
+        if($datetime === null) return now(self::$timezone);
+
         if($datetime instanceof \Carbon\Carbon) return $datetime->copy()->tz(self::$timezone);
         else return \Carbon\Carbon::parse($datetime)->copy()->tz(self::$timezone);
         
         return null;
     }
     
-    public static function getMysqlQueryTzRaw($value, $timezone_from=null)
+    public static function getMysqlQueryTzRaw(string $value, string $timezone_from = null) : string
     {
         if($timezone_from) $from_datetime_carbon = now($timezone_from);
         else $from_datetime_carbon = now();
@@ -41,7 +44,7 @@ class DateTimeModifier{
         return "CONVERT_TZ($value, '".$from_datetime_carbon->format("P")."', '".now(self::$timezone)->format("P")."')";
     }
 
-    public static function getMysqlQueryTzRawDB($value, $timezone_from=null)
+    public static function getMysqlQueryTzRawDB(string $value, string $timezone_from=null) : Expression
     {
         return DB::raw(self::getMysqlQueryTzRaw($value, $timezone_from));
     }

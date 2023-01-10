@@ -1,36 +1,38 @@
 <?php
 namespace SoulDoit\DataTableTwo;
 
+use Illuminate\Database\Eloquent\Builder;
+
 trait Query{
     private $dt_query;
     private $query_count;
 
-    private function dtQuery($selected_columns=null)
+    private function dtQuery(array $selected_columns = null) : Builder
     {
         return is_callable($this->dt_query) ? ($this->dt_query)($selected_columns) : $this->dt_query;
     }
 
 
-    private function queryCount($the_query)
+    private function queryCount(Builder $the_query) : int
     {
         if($this->query_count == null) return $the_query->count();
         return is_callable($this->query_count) ? ($this->query_count)($the_query) : $this->query_count;
     }
 
 
-    private function setDtQuery($dt_query)
+    private function setDtQuery(mixed $dt_query)
     {
         $this->dt_query = $dt_query;
     }
 
 
-    private function setQueryCount($query_count)
+    private function setQueryCount(mixed $query_count)
     {
         $this->query_count = $query_count;
     }
 
 
-    private function queryOrder($the_query)
+    private function queryOrder(Builder $the_query) : Builder
     {
         $request = request();
 
@@ -58,7 +60,7 @@ trait Query{
     }
 
 
-    private function queryPagination($the_query)
+    private function queryPagination(Builder $the_query) : Builder
     {
         $request = request();
 
@@ -82,7 +84,7 @@ trait Query{
     }
 
 
-    private function querySearch($the_query)
+    private function querySearch(Builder $the_query) : Builder
     {
         $search_value = $this->getSearchValue();
 
@@ -104,7 +106,7 @@ trait Query{
     }
 
 
-    private function getSearchValue()
+    private function getSearchValue() : string
     {
         $is_search_enable = isset($this->is_search_enable) ? $this->is_search_enable : false;
         if(!$is_search_enable) return '';
