@@ -1,38 +1,39 @@
 <?php
 namespace SoulDoit\DataTableTwo;
 
-use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
+use Illuminate\Database\Query\Builder as QueryBuilder;
 
 trait Query{
     private $dt_query;
     private $query_count;
 
-    private function dtQuery(array $selected_columns = null) : Builder
+    private function dtQuery(array $selected_columns = null)
     {
         return is_callable($this->dt_query) ? ($this->dt_query)($selected_columns) : $this->dt_query;
     }
 
 
-    private function queryCount(Builder $the_query) : int
+    private function queryCount(EloquentBuilder|QueryBuilder $the_query) : int
     {
         if($this->query_count == null) return $the_query->count();
         return is_callable($this->query_count) ? ($this->query_count)($the_query) : $this->query_count;
     }
 
 
-    private function setDtQuery(mixed $dt_query)
+    private function setDtQuery(callable|EloquentBuilder|QueryBuilder $dt_query)
     {
         $this->dt_query = $dt_query;
     }
 
 
-    private function setQueryCount(mixed $query_count)
+    private function setQueryCount(callable|int $query_count)
     {
         $this->query_count = $query_count;
     }
 
 
-    private function queryOrder(Builder $the_query) : Builder
+    private function queryOrder(EloquentBuilder|QueryBuilder $the_query)
     {
         $request = request();
 
@@ -60,7 +61,7 @@ trait Query{
     }
 
 
-    private function queryPagination(Builder $the_query) : Builder
+    private function queryPagination(EloquentBuilder|QueryBuilder $the_query)
     {
         $request = request();
 
@@ -84,7 +85,7 @@ trait Query{
     }
 
 
-    private function querySearch(Builder $the_query) : Builder
+    private function querySearch(EloquentBuilder|QueryBuilder $the_query)
     {
         $search_value = $this->getSearchValue();
 

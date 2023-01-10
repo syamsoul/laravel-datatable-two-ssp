@@ -4,7 +4,8 @@ namespace SoulDoit\DataTableTwo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
+use Illuminate\Database\Query\Builder as QueryBuilder;
 use SoulDoit\DataTableTwo\Exceptions\RawExpressionMustHaveAliasName;
 use SoulDoit\DataTableTwo\Exceptions\ValueInCsvColumnsMustBeString;
 use SoulDoit\DataTableTwo\Query;
@@ -274,7 +275,7 @@ trait SSP{
     }
 
 
-    private function getFormattedData(Builder $the_query, bool $is_for_doc = false) : array
+    private function getFormattedData(EloquentBuilder|QueryBuilder $the_query, bool $is_for_doc = false) : array
     {
         $the_query_data_eloq = $the_query->get();
 
