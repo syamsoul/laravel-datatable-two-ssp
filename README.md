@@ -55,10 +55,6 @@ php artisan vendor:publish --provider="SoulDoit\DataTableTwo\DataTableServicePro
 
 &nbsp;
 &nbsp;
-***NOTE***: Please see [CHANGELOG](CHANGELOG.md) for more information about what has changed recently.
-
-&nbsp;
-&nbsp;
 ## Usage & Reference
 
 \* Before you read this section, you can take a look [the code example](#example) to make it more clear to understand.
@@ -98,7 +94,7 @@ class UserListController extends Controller
 {
     use SSP;
 
-    protected function dtColumns()
+    private function dtColumns()
     {
         return [
             ['label'=>'ID',         'db'=>'id'          ],
@@ -109,7 +105,7 @@ class UserListController extends Controller
     }
 
 
-    protected function dtQuery($selected_columns)
+    private function dtQuery($selected_columns)
     {
         return \App\Models\User::select($selected_columns);
     }
