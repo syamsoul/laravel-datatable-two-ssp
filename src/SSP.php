@@ -140,12 +140,27 @@ trait SSP{
 
             }elseif(in_array($frontend_framework, ["vuetify", "others"])){
 
-                $ret['data'] = [
-                    'items' => $the_query_data,
+                $ret['data'] = [];
+
+                $pagination_data = $this->getPaginationData();
+
+                if(!empty($pagination_data)){
+                    $current_page_item_count = count($the_query_data);
+                    $current_item_position_start = $current_page_item_count == 0 ? 0 : ($pagination_data['offset'] + 1);
+                    $current_item_position_end = $current_page_item_count == 0 ? 0 : ($current_item_position_start + $current_page_item_count) - 1;
+
+                    $ret['data'] = array_merge($ret['data'], [
+                        'current_item_position_start' => $current_item_position_start,
+                        'current_item_position_end' => $current_item_position_end,
+                        'current_page_item_count' => $current_page_item_count,
+                    ]);
+                }
+
+                $ret['data'] = array_merge($ret['data'], [
                     'total_item_count' => $the_query_count,
                     'total_filtered_item_count' => $the_query_filtered_count,
-                ];
-
+                    'items' => $the_query_data,
+                ]);
             }
 
             $ret['success'] = true;

@@ -7,6 +7,7 @@ use Illuminate\Database\Query\Builder as QueryBuilder;
 trait Query{
     private $dt_query;
     private $query_count;
+    private $pagination_data;
 
     private function dtQuery(array $selected_columns = null)
     {
@@ -65,23 +66,45 @@ trait Query{
     {
         $request = request();
 
+        $pagination_data = $this->getPaginationData();
+
+        if(isset($pagination_data['items_per_page']) && isset($pagination_data['offset'])){
+            if($pagination_data['items_per_page'] != "-1") $the_query->limit($pagination_data['items_per_page'])->offset($pagination_data['offset']);
+        }
+
+        return $the_query;
+    }
+
+
+    private function getPaginationData()
+    {
+        if($this->pagination_data !== null) return $this->pagination_data;
+
+        $request = request();
+
+        $ret = [];
+
         $frontend_framework = config('sd-datatable-two-ssp.frontend_framework');
 
         if($frontend_framework == "datatablejs"){
 
             if($request->filled('length') && $request->filled('start')){
-                if($request->length != "-1") $the_query->limit($request->length)->offset($request->start);
+                $ret['items_per_page'] = $request->length;
+                $ret['offset'] = $request->start;
             }
 
         }elseif(in_array($frontend_framework, ["vuetify", "others"])){
 
             if($request->filled('itemsPerPage') && $request->filled('page')){
-                if($request->itemsPerPage != "-1") $the_query->limit($request->itemsPerPage)->offset(($request->page - 1) * $request->itemsPerPage);
+                $ret['items_per_page'] = $request->itemsPerPage;
+                $ret['offset'] = ($request->page - 1) * $request->itemsPerPage;
             }
 
         }
 
-        return $the_query;
+        $this->pagination_data = $ret;
+
+        return $ret;
     }
 
 
