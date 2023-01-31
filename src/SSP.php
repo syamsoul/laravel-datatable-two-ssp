@@ -173,21 +173,25 @@ trait SSP{
 
     public function dtGtCsvFile()
     {
-        $lock_name = 'export-csv-'.request()->route()->getName();
-        if(config('sd-datatable-two-ssp.export_to_csv.is_cache_lock_based_on_auth')){
-            $current_user = auth()->user();
-            if(!empty($current_user)) $lock_name .= '-'.$current_user->id;
+        $is_cache_lock_enable = config('sd-datatable-two-ssp.export_to_csv.is_cache_lock_enable', false);
+
+        if($is_cache_lock_enable){
+            $lock_name = 'export-csv-'.request()->route()->getName();
+            if(config('sd-datatable-two-ssp.export_to_csv.is_cache_lock_based_on_auth')){
+                $current_user = auth()->user();
+                if(!empty($current_user)) $lock_name .= '-'.$current_user->id;
+            }
+            $lock = Cache::lock($lock_name, 3600); // lock for 1 hour
+
+            $retry_count = 0;
+
+            while(!$lock->get() && $retry_count<5){
+                $retry_count++;
+                usleep(1500000);
+            }
+
+            if($retry_count == 5) abort(408, "Currently, there's another proccess is running. Please try again later.");
         }
-        $lock = Cache::lock($lock_name, 3600); // lock for 1 hour
-
-        $retry_count = 0;
-
-        while(!$lock->get() && $retry_count<5){
-            $retry_count++;
-            usleep(1500000);
-        }
-
-        if($retry_count == 5) abort(408, "Currently, there's another proccess is running. Please try again later.");
 
         $headers = [
             'Cache-Control'       => 'must-revalidate, post-check=0, pre-check=0',
@@ -212,7 +216,7 @@ trait SSP{
         //check if value in each columns is string
         foreach ($the_query_data as $row){
             foreach($row as $e_col) if(!is_string($e_col) && !is_numeric($e_col)){
-                $lock->release();
+                if($is_cache_lock_enable) $lock->release();
                 throw ValueInCsvColumnsMustBeString::create(json_encode($e_col));
             }
         }
@@ -223,7 +227,7 @@ trait SSP{
             fclose($file);
         };
 
-        $lock->release();
+        if($is_cache_lock_enable) $lock->release();
 
         return response()->stream($callback, 200, $headers);
     }
