@@ -32,7 +32,7 @@ trait SSP{
 
     private function dtGetFrontEndColumns() : array
     {
-        $frontend_framework = config('sd-datatable-two-ssp.frontend_framework');
+        $frontend_framework = isset($this->frontend_framework) ? $this->frontend_framework : config('sd-datatable-two-ssp.frontend_framework', 'others');
 
         $dt_cols = $this->dtColumns();
 
@@ -94,7 +94,7 @@ trait SSP{
     {
         $ret = ['success'=>false];
 
-        $frontend_framework = config('sd-datatable-two-ssp.frontend_framework');
+        $frontend_framework = isset($this->frontend_framework) ? $this->frontend_framework : config('sd-datatable-two-ssp.frontend_framework', 'others');
 
         $arranged_cols_details = $this->getArrangedColsDetails();
         $dt_cols = $arranged_cols_details['dt_cols'];

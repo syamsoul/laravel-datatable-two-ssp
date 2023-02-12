@@ -40,7 +40,7 @@ trait Query{
     {
         $request = request();
 
-        $frontend_framework = config('sd-datatable-two-ssp.frontend_framework');
+        $frontend_framework = isset($this->frontend_framework) ? $this->frontend_framework : config('sd-datatable-two-ssp.frontend_framework', 'others');
 
         $arranged_cols_details = $this->getArrangedColsDetails();
         $db_cols_mid = $arranged_cols_details['db_cols_mid'];
@@ -98,7 +98,7 @@ trait Query{
 
         $ret = [];
 
-        $frontend_framework = config('sd-datatable-two-ssp.frontend_framework');
+        $frontend_framework = isset($this->frontend_framework) ? $this->frontend_framework : config('sd-datatable-two-ssp.frontend_framework', 'others');
 
         if($frontend_framework == "datatablejs"){
 
@@ -162,14 +162,14 @@ trait Query{
         if(!$is_search_enable) return '';
 
         $request = request();
-        $frontend_framework = config('sd-datatable-two-ssp.frontend_framework');
+        $frontend_framework = isset($this->frontend_framework) ? $this->frontend_framework : config('sd-datatable-two-ssp.frontend_framework', 'others');
 
         $search_value = '';
 
         if($frontend_framework == "datatablejs"){
 
             if($request->filled('search')){
-                $search_value = $request->search['value'];
+                $search_value = $request->search['value'] ?? '';
             }
 
         }elseif(in_array($frontend_framework, ["vuetify", "others"])){
