@@ -10,7 +10,7 @@ use SoulDoit\DataTableTwo\Exceptions\RawExpressionMustHaveAliasName;
 use SoulDoit\DataTableTwo\Exceptions\ValueInCsvColumnsMustBeString;
 use SoulDoit\DataTableTwo\Query;
 
-trait SSP{
+class SSP{
     use Query;
 
     private $dt_columns;
@@ -18,23 +18,23 @@ trait SSP{
     private $db_fake_identifier = '||-----FAKE-----||';
 
 
-    private function dtColumns() : array
+    protected function columns() : array
     {
         return $this->dt_columns;
     }
 
 
-    private function setDtColumns(array $dt_columns)
+    public function setColumns(array $columns)
     {
-        $this->dt_columns = $dt_columns;
+        $this->dt_columns = $columns;
     }
 
 
-    private function dtGetFrontEndColumns() : array
+    public function getFrontEndColumns() : array
     {
         $frontend_framework = isset($this->frontend_framework) ? $this->frontend_framework : config('sd-datatable-two-ssp.frontend_framework', 'others');
 
-        $dt_cols = $this->dtColumns();
+        $dt_cols = $this->columns();
 
         $frontend_dt_cols = [];
         foreach($dt_cols as $dt_col){
@@ -90,8 +90,10 @@ trait SSP{
     }
 
 
-    public function dtGetData(Request $request)
+    public function getData(bool $return_json = true)
     {
+        $request = request();
+        
         $ret = ['success'=>false];
 
         $frontend_framework = isset($this->frontend_framework) ? $this->frontend_framework : config('sd-datatable-two-ssp.frontend_framework', 'others');
@@ -101,7 +103,7 @@ trait SSP{
         $db_cols = $arranged_cols_details['db_cols'];
         $db_cols_final = $arranged_cols_details['db_cols_final'];
 
-        $the_query = $this->dtQuery($db_cols);
+        $the_query = $this->query($db_cols);
 
         if($the_query != null){
 
@@ -167,11 +169,12 @@ trait SSP{
 
         }
 
-        return response()->json($ret);
+        if($return_json) return response()->json($ret);
+        return $ret;
     }
 
 
-    public function dtGtCsvFile()
+    public function getCsvFile()
     {
         $is_cache_lock_enable = config('sd-datatable-two-ssp.export_to_csv.is_cache_lock_enable', false);
 
@@ -201,7 +204,7 @@ trait SSP{
             'Pragma'              => 'public'
         ];
 
-        $the_query = $this->dtQuery($this->getArrangedColsDetails()['db_cols']);
+        $the_query = $this->query($this->getArrangedColsDetails()['db_cols']);
 
         $the_query = $this->querySearch($the_query);
         $the_query = $this->queryOrder($the_query);
@@ -209,7 +212,7 @@ trait SSP{
         $the_query_data = $this->getFormattedData($the_query, true);
 
         // add headers for each column in the CSV download
-        $dt_cols = $this->dtColumns();
+        $dt_cols = $this->columns();
         foreach($dt_cols as $index=>$e_dt_col) if(isset($e_dt_col['is_include_in_doc'])) if(!$e_dt_col['is_include_in_doc']) unset($dt_cols[$index]);
         array_unshift($the_query_data, collect($dt_cols)->pluck('label')->toArray());
 
@@ -239,7 +242,7 @@ trait SSP{
             if($this->arranged_cols_details != null) return $this->arranged_cols_details;
         }
 
-        $dt_cols = $this->dtColumns();
+        $dt_cols = $this->columns();
 
         $db_cols = []; $db_cols_initial = []; $db_cols_mid = []; $db_cols_final = []; $formatter = [];
         foreach($dt_cols as $key=>$dt_col){

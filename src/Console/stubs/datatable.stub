@@ -1,0 +1,20 @@
+<?php
+
+namespace {{ namespace }};
+
+use SoulDoit\DataTableTwo\SSP;
+
+class {{ class }} extends SSP
+{
+    protected function columns(): array
+    {
+        return [
+            ['db' => 'id'],
+        ];
+    }
+
+    protected function query(array $selected_columns = null)
+    {
+        // return \App\Models\User::select($selected_columns);
+    }
+}

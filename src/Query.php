@@ -11,7 +11,7 @@ trait Query{
     private $query_count;
     private $pagination_data;
 
-    private function dtQuery(array $selected_columns = null)
+    protected function query(array $selected_columns = null)
     {
         return is_callable($this->dt_query) ? ($this->dt_query)($selected_columns) : $this->dt_query;
     }
@@ -24,13 +24,13 @@ trait Query{
     }
 
 
-    private function setDtQuery(callable|EloquentBuilder|QueryBuilder $dt_query)
+    public function setQuery(callable|EloquentBuilder|QueryBuilder $query)
     {
-        $this->dt_query = $dt_query;
+        $this->dt_query = $query;
     }
 
 
-    private function setQueryCount(callable|int $query_count)
+    public function setQueryCount(callable|int $query_count)
     {
         $this->query_count = $query_count;
     }

@@ -3,6 +3,7 @@
 namespace SoulDoit\DataTableTwo;
 
 use Illuminate\Support\ServiceProvider;
+use SoulDoit\DataTableTwo\Console;
 
 class DataTableServiceProvider extends ServiceProvider
 {
@@ -22,6 +23,16 @@ class DataTableServiceProvider extends ServiceProvider
                 __DIR__.'/../config/sd-datatable-two-ssp.php',
                 'sd-datatable-two-ssp'
             );
+
+            foreach (glob(app_path().'/DataTables/*.php') as $filename) {
+                $class = '\\App\\DataTables\\'.basename($filename, '.php');
+            
+                $this->app->bind($class);
+            }
+
+            $this->commands([
+                Console\MakeDatatableCommand::class,
+            ]);
         }
     }
 
