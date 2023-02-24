@@ -35,7 +35,7 @@ class SSP{
     private function getColumns()
     {
         return array_map(function($v){
-            if(is_string($v)) return ['db'=>$v];
+            if(!is_array($v)) return ['db'=>$v];
             return $v;
         }, $this->columns());
     }
