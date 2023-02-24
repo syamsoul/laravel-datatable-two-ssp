@@ -32,11 +32,19 @@ class SSP{
     }
 
 
+    private function getColumns()
+    {
+        return array_map(function($v){
+            if(is_string($v)) return ['db'=>$v];
+        }, $this->columns());
+    }
+
+
     public function getFrontEndColumns() : array
     {
         $frontend_framework = isset($this->frontend_framework) ? $this->frontend_framework : config('sd-datatable-two-ssp.frontend_framework', 'others');
 
-        $dt_cols = $this->columns();
+        $dt_cols = $this->getColumns();
 
         $frontend_dt_cols = [];
         foreach($dt_cols as $dt_col){
@@ -214,7 +222,7 @@ class SSP{
         $the_query_data = $this->getFormattedData($the_query, true);
 
         // add headers for each column in the CSV download
-        $dt_cols = $this->columns();
+        $dt_cols = $this->getColumns();
         foreach($dt_cols as $index=>$e_dt_col) if(isset($e_dt_col['is_include_in_doc'])) if(!$e_dt_col['is_include_in_doc']) unset($dt_cols[$index]);
         array_unshift($the_query_data, collect($dt_cols)->pluck('label')->toArray());
 
@@ -244,7 +252,7 @@ class SSP{
             if($this->arranged_cols_details != null) return $this->arranged_cols_details;
         }
 
-        $dt_cols = $this->columns();
+        $dt_cols = $this->getColumns();
 
         $db_cols = []; $db_cols_initial = []; $db_cols_mid = []; $db_cols_final = []; $formatter = [];
         foreach($dt_cols as $key=>$dt_col){
