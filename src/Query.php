@@ -9,6 +9,7 @@ use SoulDoit\DataTableTwo\Exceptions\InvalidItemsPerPageValue;
 trait Query{
     private $dt_query;
     private $query_count;
+    private $query_custom_filter;
     private $pagination_data;
 
     protected function query(array $selected_columns)
@@ -138,6 +139,22 @@ trait Query{
         $this->pagination_data = $ret;
 
         return $ret;
+    }
+
+
+    protected function queryCustomFilter(EloquentBuilder|QueryBuilder $the_query)
+    {
+        if($this->query_custom_filter == null) return $the_query;
+
+        return is_callable($this->query_custom_filter) ? ($this->query_custom_filter)($the_query) : $this->query_custom_filter;
+    }
+
+
+    public function setQueryCustomFilter(callable|EloquentBuilder|QueryBuilder $query)
+    {
+        $this->query_custom_filter = $query;
+
+        return $this;
     }
 
 

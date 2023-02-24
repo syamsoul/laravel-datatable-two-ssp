@@ -121,8 +121,9 @@ class SSP{
             $the_query_count = $this->queryCount($the_query);
 
             $the_query = $this->querySearch($the_query);
+            $the_query = $this->queryCustomFilter($the_query);
 
-            $the_query_filtered_count = empty($this->getSearchValue()) ? $the_query_count : $this->queryCount($the_query);
+            $the_query_filtered_count = empty($this->getSearchValue() || $this->query_custom_filter != null) ? $the_query_count : $this->queryCount($the_query);
 
             $the_query = $this->queryOrder($the_query);
             $the_query = $this->queryPagination($the_query);
@@ -218,6 +219,7 @@ class SSP{
         $the_query = $this->query($this->getArrangedColsDetails()['db_cols']);
 
         $the_query = $this->querySearch($the_query);
+        $the_query = $this->queryCustomFilter($the_query);
         $the_query = $this->queryOrder($the_query);
 
         $the_query_data = $this->getFormattedData($the_query, true);
