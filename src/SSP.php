@@ -36,6 +36,7 @@ class SSP{
     {
         return array_map(function($v){
             if(is_string($v)) return ['db'=>$v];
+            return $v;
         }, $this->columns());
     }
 
