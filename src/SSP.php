@@ -18,7 +18,7 @@ class SSP{
     private $db_fake_identifier = '||-----FAKE-----||';
 
 
-    protected function columns() : array
+    protected function columns()
     {
         return $this->dt_columns;
     }

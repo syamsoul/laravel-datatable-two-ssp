@@ -11,7 +11,7 @@ trait Query{
     private $query_count;
     private $pagination_data;
 
-    protected function query(array $selected_columns = null)
+    protected function query(array $selected_columns)
     {
         return is_callable($this->dt_query) ? ($this->dt_query)($selected_columns) : $this->dt_query;
     }
