@@ -27,12 +27,16 @@ trait Query{
     public function setQuery(callable|EloquentBuilder|QueryBuilder $query)
     {
         $this->dt_query = $query;
+
+        return $this;
     }
 
 
     public function setQueryCount(callable|int $query_count)
     {
         $this->query_count = $query_count;
+
+        return $this;
     }
 
 
@@ -181,5 +185,21 @@ trait Query{
         }
 
         return $search_value;
+    }
+
+
+    public function enableSearch(bool $enable = true)
+    {
+        $this->is_search_enable = $enable;
+
+        return $this;
+    }
+
+
+    public function setAllowedItemsPerPage(int|array $allowed_items_per_page)
+    {
+        $this->allowed_items_per_page = $allowed_items_per_page;
+
+        return $this;
     }
 }

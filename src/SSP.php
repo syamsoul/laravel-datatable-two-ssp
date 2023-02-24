@@ -27,6 +27,8 @@ class SSP{
     public function setColumns(array $columns)
     {
         $this->dt_columns = $columns;
+
+        return $this;
     }
 
 
@@ -326,5 +328,13 @@ class SSP{
         }
 
         return $the_query_data;
+    }
+
+
+    public function setFrontendFramework(string $frontend_framework)
+    {
+        $this->frontend_framework = $frontend_framework;
+
+        return $this;
     }
 }
