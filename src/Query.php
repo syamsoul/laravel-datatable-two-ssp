@@ -19,7 +19,10 @@ trait Query{
 
     private function queryCount(EloquentBuilder|QueryBuilder $the_query) : int
     {
-        if($this->query_count == null) return $the_query->count();
+        if($this->query_count == null){
+            if(!empty($the_query->getQuery()->groups)) return $the_query->getQuery()->getCountForPagination();
+            return $the_query->count();
+        }
         return is_callable($this->query_count) ? ($this->query_count)($the_query) : $this->query_count;
     }
 

@@ -66,13 +66,13 @@ class SSP{
                 if(isset($dt_col['db'])){
                     $is_db_raw = ($dt_col['db'] instanceof \Illuminate\Database\Query\Expression);
 
-                    if($is_db_raw) $dt_col_db_arr = explode(" as ", strtolower($dt_col['db']->getValue()));
+                    if($is_db_raw) $dt_col_db_arr = explode(" as ", strtolower($this->getRawExpressionValue($dt_col['db'])));
                     else $dt_col_db_arr = explode(" as ", strtolower($dt_col['db']));
 
                     if(count($dt_col_db_arr) == 2){
                         $db_col = $is_db_raw ? str_replace("`", "", $dt_col_db_arr[1]) : $dt_col_db_arr[1];
                     }else{
-                        if($is_db_raw) throw RawExpressionMustHaveAliasName::create($dt_col['db']->getValue());
+                        if($is_db_raw) throw RawExpressionMustHaveAliasName::create($this->getRawExpressionValue($dt_col['db']));
 
                         $dt_col_db_arr = explode(".", $dt_col['db']);
                         if(count($dt_col_db_arr) == 2) $db_col = $dt_col_db_arr[1];
@@ -263,7 +263,7 @@ class SSP{
 
                 $is_db_raw = ($dt_col['db'] instanceof \Illuminate\Database\Query\Expression);
 
-                if($is_db_raw) $dt_col_db_arr = explode(" as ", strtolower($dt_col['db']->getValue()));
+                if($is_db_raw) $dt_col_db_arr = explode(" as ", strtolower($this->getRawExpressionValue($dt_col['db'])));
                 else $dt_col_db_arr = explode(" as ", strtolower($dt_col['db']));
 
                 if(count($dt_col_db_arr) == 2){
@@ -271,7 +271,7 @@ class SSP{
                     $db_cols_mid[$key] = $is_db_raw ? str_replace("`", "", $dt_col_db_arr[1]) : $dt_col_db_arr[1];
                     $db_cols_initial[$key] = $is_db_raw ? DB::raw($dt_col_db_arr[0]) : $dt_col_db_arr[0];
                 }else{
-                    if($is_db_raw) throw RawExpressionMustHaveAliasName::create($dt_col['db']->getValue());
+                    if($is_db_raw) throw RawExpressionMustHaveAliasName::create($this->getRawExpressionValue($dt_col['db']));
 
                     $dt_col_db_arr = explode(".", $dt_col['db']);
 
@@ -345,5 +345,14 @@ class SSP{
         $this->frontend_framework = $frontend_framework;
 
         return $this;
+    }
+
+
+    private function getRawExpressionValue($raw_expression)
+    {
+        $is_laravel_version_ten = intval(app()->version()) >= 10;
+
+        if($is_laravel_version_ten) return $raw_expression->getValue(DB::connection()->getQueryGrammar());
+        else return $raw_expression->getValue();
     }
 }
