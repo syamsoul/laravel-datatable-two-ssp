@@ -9,6 +9,7 @@ use Illuminate\Database\Query\Builder as QueryBuilder;
 use SoulDoit\DataTableTwo\Exceptions\RawExpressionMustHaveAliasName;
 use SoulDoit\DataTableTwo\Exceptions\ValueInCsvColumnsMustBeString;
 use SoulDoit\DataTableTwo\Query;
+use ReflectionMethod;
 
 class SSP{
     use Query;
@@ -123,7 +124,7 @@ class SSP{
             $the_query = $this->querySearch($the_query);
             $the_query = $this->queryCustomFilter($the_query);
 
-            $the_query_filtered_count = empty($this->getSearchValue() || $this->query_custom_filter != null) ? $the_query_count : $this->queryCount($the_query);
+            $the_query_filtered_count = empty($this->getSearchValue() || $this->query_custom_filter != null || $this->isMethodOverridden('queryCustomFilter')) ? $the_query_count : $this->queryCount($the_query);
 
             $the_query = $this->queryOrder($the_query);
             $the_query = $this->queryPagination($the_query);
@@ -356,5 +357,12 @@ class SSP{
 
         if($is_laravel_version_ten) return $raw_expression->getValue(DB::connection()->getQueryGrammar());
         else return $raw_expression->getValue();
+    }
+
+    
+    private function isMethodOverridden(string $method_name)
+    {
+        $reflector = new ReflectionMethod($this, $method_name);
+        return ($reflector->getDeclaringClass()->getName() === get_class($this));
     }
 }
