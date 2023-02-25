@@ -1,0 +1,37 @@
+<?php
+
+namespace {{ namespace }};
+
+use SoulDoit\DataTableTwo\SSP;
+
+final class {{ class }} extends SSP
+{
+    protected $is_search_enable = true;
+    protected $allowed_items_per_page = [10, 20, 50, 100];
+    protected $frontend_framework = 'others';
+
+    protected function columns()
+    {
+        return [
+            ['db' => 'id'],
+            ['db' => 'username'],
+            ['db' => 'created_at'],
+        ];
+    }
+
+    protected function query($selected_columns)
+    {
+        return \App\Models\User::select($selected_columns);
+    }
+
+    protected function queryCustomFilter($query)
+    {
+        $request = request();
+
+        if($request->filled('filter_date_start')) $query->where("created_at", '>=', \Carbon\Carbon::parse($request->filter_date_start)->format("Y-m-d 00:00:00"));
+        if($request->filled('filter_date_end')) $query->where("created_at", '<=', \Carbon\Carbon::parse($request->filter_date_end)->format("Y-m-d 23:59:59"));
+        if($request->filled('filter_username')) $query->where("username", 'LIKE', "%".$request->filter_username."%");
+
+        return $query;
+    }
+}

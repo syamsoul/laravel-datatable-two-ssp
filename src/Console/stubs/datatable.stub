@@ -4,17 +4,16 @@ namespace {{ namespace }};
 
 use SoulDoit\DataTableTwo\SSP;
 
-class {{ class }} extends SSP
+final class {{ class }} extends SSP
 {
-    protected function columns(): array
+    protected function columns()
     {
-        return [
-            ['db' => 'id'],
-        ];
+        //
     }
 
-    protected function query(array $selected_columns = null)
+    protected function query($selected_columns)
     {
-        // return \App\Models\User::select($selected_columns);
+        //
     }
 }
+

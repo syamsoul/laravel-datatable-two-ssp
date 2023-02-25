@@ -14,7 +14,7 @@ class MakeDatatableCommand extends GeneratorCommand
      *
      * @var string
      */
-    protected $name = 'sd-make:datatable';
+    protected $name = 'make:datatable {--E|example}';
 
     /**
      * The console command description.
@@ -37,6 +37,10 @@ class MakeDatatableCommand extends GeneratorCommand
      */
     protected function getStub()
     {
+        $is_provide_example = $this->argument('example');
+        
+        if($is_provide_example) return $this->resolveStubPath('/stubs/datatable-example.stub');
+        
         return $this->resolveStubPath('/stubs/datatable.stub');
     }
 
