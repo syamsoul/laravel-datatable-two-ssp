@@ -122,9 +122,20 @@ class SSP{
             $the_query_count = $this->queryCount($the_query);
 
             $the_query = $this->querySearch($the_query);
-            $the_query = $this->queryCustomFilter($the_query);
 
-            $the_query_filtered_count = empty($this->getSearchValue() || $this->query_custom_filter != null || $this->isMethodOverridden('queryCustomFilter')) ? $the_query_count : $this->queryCount($the_query);
+            $has_custom_filter_query = false;
+            if($this->query_custom_filter != null || $this->isMethodOverridden('queryCustomFilter')){
+                $the_custom_filter_query = $this->queryCustomFilter($the_query);
+                
+                if(gettype($the_custom_filter_query) == 'object'){
+                    if($the_custom_filter_query instanceof EloquentBuilder || $the_custom_filter_query instanceof QueryBuilder){
+                        $has_custom_filter_query = true;
+                        $the_query = $the_custom_filter_query;
+                    }
+                }
+            }
+
+            $the_query_filtered_count = (empty($this->getSearchValue()) && !$has_custom_filter_query) ? $the_query_count : $this->queryCount($the_query);
 
             $the_query = $this->queryOrder($the_query);
             $the_query = $this->queryPagination($the_query);
@@ -362,7 +373,10 @@ class SSP{
     
     private function isMethodOverridden(string $method_name)
     {
+        $current_class = get_class($this);
+        if($current_class === 'SoulDoit\DataTableTwo\SSP') return false;
+        
         $reflector = new ReflectionMethod($this, $method_name);
-        return ($reflector->getDeclaringClass()->getName() === get_class($this));
+        return ($reflector->getDeclaringClass()->getName() === $current_class);
     }
 }

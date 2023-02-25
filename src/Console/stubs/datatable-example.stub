@@ -28,6 +28,10 @@ final class {{ class }} extends SSP
     {
         $request = request();
 
+        if(!$request->anyFilled(['filter_date_start', 'filter_date_end', 'filter_username'])){
+            return false; // NOTE: return false to ensure count query will not executed twice
+        }
+
         $request->validate([
             'filter_date_start' => ['nullable', 'date_format:Y-m-d'],
             'filter_date_end' => ['nullable', 'date_format:Y-m-d'],
