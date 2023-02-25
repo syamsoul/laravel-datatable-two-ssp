@@ -63,7 +63,18 @@ trait Query{
         }elseif(in_array($frontend_framework, ["vuetify", "others"])){
 
             if($request->filled('sortBy') && $request->filled('sortDesc')){
-                $the_query->orderBy($db_cols_mid[array_flip($db_cols_final)[$request->sortBy]], ($request->sortDesc == 'true' ? 'desc':'asc'));
+                $request->validate([
+                    'sortDesc' => ['in:1,0,true,false'],
+                ],[
+                    'sortDesc.in' => 'Sort desc must be either 1,0,true or false',
+                ]);
+
+                $sortDesc = $request->sortDesc;
+                if(is_string($request->sortDesc) || is_numeric($request->sortDesc)){
+                    $sortDesc = in_array($request->sortDesc, [1, '1', 'true']);
+                }
+
+                $the_query->orderBy($db_cols_mid[array_flip($db_cols_final)[$request->sortBy]], ($sortDesc ? 'desc':'asc'));
             }
 
         }
