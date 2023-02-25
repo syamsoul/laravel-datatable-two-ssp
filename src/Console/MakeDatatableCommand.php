@@ -4,6 +4,7 @@ namespace SoulDoit\DataTableTwo\Console;
 
 use Illuminate\Console\Concerns\CreatesMatchingTest;
 use Illuminate\Console\GeneratorCommand;
+use Symfony\Component\Console\Input\InputOption;
 
 class MakeDatatableCommand extends GeneratorCommand
 {
@@ -14,7 +15,7 @@ class MakeDatatableCommand extends GeneratorCommand
      *
      * @var string
      */
-    protected $name = 'make:datatable {--E|example}';
+    protected $name = 'make:datatable';
 
     /**
      * The console command description.
@@ -37,11 +38,23 @@ class MakeDatatableCommand extends GeneratorCommand
      */
     protected function getStub()
     {
-        $is_provide_example = $this->argument('example');
-        
-        if($is_provide_example) return $this->resolveStubPath('/stubs/datatable-example.stub');
+        if ($this->option('example')) {
+            return $this->resolveStubPath('/stubs/datatable-example.stub');
+        }
         
         return $this->resolveStubPath('/stubs/datatable.stub');
+    }
+
+    /**
+     * Get the console command options.
+     *
+     * @return array
+     */
+    protected function getOptions()
+    {
+        return [
+            ['example', 'e', InputOption::VALUE_NONE, 'Generate a datatable class with examples'],
+        ];
     }
 
     /**
