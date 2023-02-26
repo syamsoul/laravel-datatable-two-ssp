@@ -78,6 +78,6 @@ class MakeDatatableCommand extends GeneratorCommand
      */
     protected function getDefaultNamespace($rootNamespace)
     {
-        return $rootNamespace.'\DataTables';
+        return $rootNamespace.'\Http\DataTables';
     }
 }
