@@ -121,31 +121,40 @@ trait Query{
 
         if($frontend_framework == "datatablejs"){
 
+            $firstRequestName = 'start';
+            $secondRequestName = 'length';
+
             if($request->filled('length') && $request->filled('start')){
                 $ret['items_per_page'] = $request->length;
                 $ret['offset'] = $request->start;
-            }else{
-                if(isset($this->allowed_items_per_page)){
-                    if(is_numeric($this->allowed_items_per_page) || is_array($this->allowed_items_per_page)){
-                        throw PageAndItemsPerPageParametersAreRequired::create('start', 'length');
-                    }
-                }
             }
 
         }elseif(in_array($frontend_framework, ["vuetify", "others"])){
 
+            $firstRequestName = 'page';
+            $secondRequestName = 'itemsPerPage';
+
             if($request->filled('itemsPerPage') && $request->filled('page')){
                 $ret['items_per_page'] = $request->itemsPerPage;
-                $ret['offset'] = ($request->page - 1) * $request->itemsPerPage;
-            }else{
-                if(isset($this->allowed_items_per_page)){
-                    if(is_numeric($this->allowed_items_per_page) || is_array($this->allowed_items_per_page)){
-                        throw PageAndItemsPerPageParametersAreRequired::create('page', 'itemsPerPage');
-                    }
-                }
+                $ret['offset'] = ($request->page - 1) * $request->itemsPerPage;    
             }
 
         }
+
+        if(empty($ret)){
+            if(isset($this->allowed_items_per_page)){
+                if(is_numeric($this->allowed_items_per_page) || is_array($this->allowed_items_per_page)){
+                    $aipp = $this->allowed_items_per_page;
+                    if(is_numeric($aipp)) $aipp = [$aipp];
+                    if(!in_array(-1, $aipp)) throw PageAndItemsPerPageParametersAreRequired::create($firstRequestName, $secondRequestName);
+                }
+            }
+        }
+
+        $request->validate([
+            $firstRequestName => ['required_with:'.$secondRequestName],
+            $secondRequestName => ['required_with:'.$firstRequestName],
+        ]);
 
         $this->pagination_data = $ret;
 
