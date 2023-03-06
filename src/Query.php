@@ -21,7 +21,10 @@ trait Query{
     protected function queryCount(EloquentBuilder|QueryBuilder $the_query)
     {
         if($this->query_count == null){
-            if(!empty($the_query->getQuery()->groups)) return $the_query->getQuery()->getCountForPagination();
+            if($the_query instanceof EloquentBuilder){
+                if(!empty($the_query->getQuery()->groups)) return $the_query->getQuery()->getCountForPagination();
+            }
+            
             return $the_query->count();
         }
         return is_callable($this->query_count) ? ($this->query_count)($the_query) : $this->query_count;
