@@ -231,7 +231,17 @@ class SSP{
         $the_query = $this->query($this->getArrangedColsDetails()['db_cols']);
 
         $the_query = $this->querySearch($the_query);
-        $the_query = $this->queryCustomFilter($the_query);
+
+        if($this->query_custom_filter != null || $this->isMethodOverridden('queryCustomFilter')){
+            $the_custom_filter_query = $this->queryCustomFilter($the_query);
+            
+            if(gettype($the_custom_filter_query) == 'object'){
+                if($the_custom_filter_query instanceof EloquentBuilder || $the_custom_filter_query instanceof QueryBuilder){
+                    $the_query = $the_custom_filter_query;
+                }
+            }
+        }
+
         $the_query = $this->queryOrder($the_query);
 
         $the_query_data = $this->getFormattedData($the_query, true);
