@@ -74,7 +74,7 @@ trait Query{
 
                 $sortDesc = $request->sortDesc;
                 if(is_string($request->sortDesc) || is_numeric($request->sortDesc)){
-                    $sortDesc = in_array($request->sortDesc, [1, '1', 'true']);
+                    $sortDesc = filter_var($request->sortDesc, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false;
                 }
 
                 $the_query->orderBy($db_cols_mid[array_flip($db_cols_final)[$request->sortBy]], ($sortDesc ? 'desc':'asc'));
