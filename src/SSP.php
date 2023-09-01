@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Query\Builder as QueryBuilder;
+use Illuminate\Database\Query\Expression;
 use Illuminate\Support\Str;
 use SoulDoit\DataTableTwo\Exceptions\RawExpressionMustHaveAliasName;
 use SoulDoit\DataTableTwo\Exceptions\ValueInCsvColumnsMustBeString;
@@ -55,10 +56,9 @@ class SSP
 
         foreach ($dt_cols as $dt_col) {
             if (isset($dt_col['db'])) {
-                $is_db_raw = ($dt_col['db'] instanceof \Illuminate\Database\Query\Expression);
+                $is_db_raw = ($dt_col['db'] instanceof Expression);
 
-                if ($is_db_raw) $dt_col_db_arr = explode(" as ", strtolower($this->getRawExpressionValue($dt_col['db'])));
-                else $dt_col_db_arr = explode(" as ", strtolower($dt_col['db']));
+                $dt_col_db_arr = $this->getDtColDbArray($dt_col['db'], $is_db_raw);
 
                 if (count($dt_col_db_arr) == 2) {
                     $db_col = $is_db_raw ? str_replace("`", "", $dt_col_db_arr[1]) : $dt_col_db_arr[1];
@@ -303,10 +303,9 @@ class SSP
             if (isset($dt_col['db'])) {
                 $db_cols[$key] = $dt_col['db'];
 
-                $is_db_raw = ($dt_col['db'] instanceof \Illuminate\Database\Query\Expression);
+                $is_db_raw = ($dt_col['db'] instanceof Expression);
 
-                if ($is_db_raw) $dt_col_db_arr = explode(" as ", strtolower($this->getRawExpressionValue($dt_col['db'])));
-                else $dt_col_db_arr = explode(" as ", strtolower($dt_col['db']));
+                $dt_col_db_arr = $this->getDtColDbArray($dt_col['db'], $is_db_raw);
 
                 if (count($dt_col_db_arr) == 2) {
                     $db_cols_final[$key] = $is_db_raw ? str_replace("`", "", $dt_col_db_arr[1]) : $dt_col_db_arr[1];
@@ -389,8 +388,7 @@ class SSP
         return $this;
     }
 
-
-    private function getRawExpressionValue($raw_expression)
+    private function getRawExpressionValue(Expression $raw_expression)
     {
         $is_laravel_version_ten = intval(app()->version()) >= 10;
 
@@ -398,6 +396,12 @@ class SSP
         else return $raw_expression->getValue();
     }
 
+    private function getDtColDbArray(string|Expression $db_col, bool $is_db_raw): array
+    {
+        $db_col = $is_db_raw ? $this->getRawExpressionValue($db_col) : $db_col;
+
+        return explode(" as ", preg_replace("/ as /i", " as ", $db_col));
+    }
     
     private function isMethodOverridden(string $method_name)
     {
