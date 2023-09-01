@@ -11,8 +11,8 @@ if (!function_exists('getTableNames')) {
     function getTableNames($className)
     {
         $className = '\\'.$className;
-        $tbl_prefix      = \DB::getTablePrefix();
-        $return_tbl      = (new $className())->getTable();
+        $tbl_prefix = \DB::getTablePrefix();
+        $return_tbl = (new $className())->getTable();
 
         return [
             $return_tbl,
