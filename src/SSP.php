@@ -50,9 +50,11 @@ class SSP{
 
         $frontend_dt_cols = [];
         foreach($dt_cols as $dt_col){
+            $dt_col_label = $dt_col['label'] ?? ucwords(str_replace("_", " ", Str::snake($db_col)));
+
             if($frontend_framework == "datatablejs"){
 
-                $e_fe_dt_col = ['title'=>$dt_col['label']];
+                $e_fe_dt_col = ['title'=>$dt_col_label];
                 if(isset($dt_col['class'])){
                     if(is_array($dt_col['class'])) $e_fe_dt_col['className'] = implode(" ", $dt_col['class']);
                     else if(is_string($dt_col['class'])) $e_fe_dt_col['className'] = $dt_col['class'];
@@ -83,12 +85,12 @@ class SSP{
 
                 if($frontend_framework == "vuetify"){
                     array_push($frontend_dt_cols, [
-                        'text' => $dt_col['label'],
+                        'text' => $dt_col_label,
                         'value' => $db_col,
                     ]);
                 }elseif($frontend_framework == "others"){
                     array_push($frontend_dt_cols, [
-                        'label' => $dt_col['label'],
+                        'label' => $dt_col_label,
                         'db' => $db_col,
                         'class' => $dt_col['class'] ?? [],
                         'sortable' => (!isset($dt_col['db']) && isset($dt_col['db_fake'])) ? false : (isset($dt_col['sortable']) ? $dt_col['sortable'] : true),
