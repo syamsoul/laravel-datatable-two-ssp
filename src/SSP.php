@@ -54,7 +54,25 @@ class SSP
         $frontend_dt_cols = [];
 
         foreach ($dt_cols as $dt_col) {
+            if (isset($dt_col['db'])) {
+                $is_db_raw = ($dt_col['db'] instanceof \Illuminate\Database\Query\Expression);
+
+                if ($is_db_raw) $dt_col_db_arr = explode(" as ", strtolower($this->getRawExpressionValue($dt_col['db'])));
+                else $dt_col_db_arr = explode(" as ", strtolower($dt_col['db']));
+
+                if (count($dt_col_db_arr) == 2) {
+                    $db_col = $is_db_raw ? str_replace("`", "", $dt_col_db_arr[1]) : $dt_col_db_arr[1];
+                } else {
+                    if ($is_db_raw) throw RawExpressionMustHaveAliasName::create($this->getRawExpressionValue($dt_col['db']));
+
+                    $dt_col_db_arr = explode(".", $dt_col['db']);
+                    if (count($dt_col_db_arr) == 2) $db_col = $dt_col_db_arr[1];
+                    else $db_col = $dt_col['db'];
+                }
+            } else if (isset($dt_col['db_fake'])) $db_col = $dt_col['db_fake'];
+
             $dt_col_label = $dt_col['label'] ?? ucwords(str_replace("_", " ", Str::snake($db_col)));
+            $sortable = (!isset($dt_col['db']) && isset($dt_col['db_fake'])) ? false : (isset($dt_col['sortable']) ? $dt_col['sortable'] : true);
 
             if ($frontend_framework == "datatablejs") {
 
@@ -65,28 +83,11 @@ class SSP
                     else if (is_string($dt_col['class'])) $e_fe_dt_col['className'] = $dt_col['class'];
                 }
 
-                $e_fe_dt_col['orderable'] = (!isset($dt_col['db']) && isset($dt_col['db_fake'])) ? false : (isset($dt_col['sortable']) ? $dt_col['sortable'] : true);
+                $e_fe_dt_col['orderable'] = $sortable;
 
                 array_push($frontend_dt_cols, $e_fe_dt_col);
 
             } else if (in_array($frontend_framework, ["vuetify", "others"])) {
-
-                if (isset($dt_col['db'])) {
-                    $is_db_raw = ($dt_col['db'] instanceof \Illuminate\Database\Query\Expression);
-
-                    if ($is_db_raw) $dt_col_db_arr = explode(" as ", strtolower($this->getRawExpressionValue($dt_col['db'])));
-                    else $dt_col_db_arr = explode(" as ", strtolower($dt_col['db']));
-
-                    if (count($dt_col_db_arr) == 2) {
-                        $db_col = $is_db_raw ? str_replace("`", "", $dt_col_db_arr[1]) : $dt_col_db_arr[1];
-                    } else {
-                        if ($is_db_raw) throw RawExpressionMustHaveAliasName::create($this->getRawExpressionValue($dt_col['db']));
-
-                        $dt_col_db_arr = explode(".", $dt_col['db']);
-                        if (count($dt_col_db_arr) == 2) $db_col = $dt_col_db_arr[1];
-                        else $db_col = $dt_col['db'];
-                    }
-                } else if (isset($dt_col['db_fake'])) $db_col = $dt_col['db_fake'];
 
                 if ($frontend_framework == "vuetify") {
                     array_push($frontend_dt_cols, [
@@ -98,7 +99,7 @@ class SSP
                         'label' => $dt_col_label,
                         'db' => $db_col,
                         'class' => $dt_col['class'] ?? [],
-                        'sortable' => (!isset($dt_col['db']) && isset($dt_col['db_fake'])) ? false : (isset($dt_col['sortable']) ? $dt_col['sortable'] : true),
+                        'sortable' => $sortable,
                     ]);
                 }
 
