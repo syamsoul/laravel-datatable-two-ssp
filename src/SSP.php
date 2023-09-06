@@ -374,7 +374,16 @@ class SSP
                         $the_query_data[$key][$e_db_col_filtered] = $e_tqde->{$e_db_col_filtered};
                     }
                 }
-                if ($is_for_doc) $the_query_data[$key][$e_db_col_filtered] = strip_tags($the_query_data[$key][$e_db_col_filtered]);
+
+                if ($is_for_doc) {
+                    $value = $the_query_data[$key][$e_db_col_filtered];
+                    
+                    if (is_array($value)) {
+                        $the_query_data[$key][$e_db_col_filtered] = json_encode($value);
+                    } else if (is_string($value)) {
+                        $the_query_data[$key][$e_db_col_filtered] = strip_tags($value);
+                    }
+                }
             }
         }
 
