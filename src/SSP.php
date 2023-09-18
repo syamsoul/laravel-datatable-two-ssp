@@ -266,7 +266,7 @@ class SSP
         //check if value in each columns is string
         foreach ($the_query_data as $row) {
             foreach ($row as $e_col) {
-                if (!is_string($e_col) && !is_numeric($e_col)) {
+                if (!is_string($e_col) && !is_numeric($e_col) && $e_col !== null) {
                     if ($is_cache_lock_enable) $lock->release();
                     throw ValueInCsvColumnsMustBeString::create(json_encode($e_col));
                 }
