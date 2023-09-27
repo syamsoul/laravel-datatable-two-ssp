@@ -13,13 +13,14 @@ trait Query
     private $query_custom_filter;
     private $pagination_data;
 
-    protected $allowed_items_per_page = null;
+    protected int|array|null $allowed_items_per_page = null;
+    protected bool $is_search_enable = false;
+    protected bool $is_sort_enable = true;
 
     protected function query(array $selected_columns)
     {
         return is_callable($this->dt_query) ? ($this->dt_query)($selected_columns) : $this->dt_query;
     }
-
 
     protected function queryCount(EloquentBuilder|QueryBuilder $the_query)
     {
@@ -34,14 +35,12 @@ trait Query
         return is_callable($this->query_count) ? ($this->query_count)($the_query) : $this->query_count;
     }
 
-
     public function setQuery(callable|EloquentBuilder|QueryBuilder $query)
     {
         $this->dt_query = $query;
 
         return $this;
     }
-
 
     public function setQueryCount(callable|int $query_count)
     {
@@ -50,9 +49,10 @@ trait Query
         return $this;
     }
 
-
     private function queryOrder(EloquentBuilder|QueryBuilder $the_query)
     {
+        if (! $this->is_sort_enable) return $the_query;
+
         $request = request();
 
         $frontend_framework = $this->frontend_framework ?? config('sd-datatable-two-ssp.frontend_framework', 'others');
@@ -90,7 +90,6 @@ trait Query
         return $the_query;
     }
 
-
     private function queryPagination(EloquentBuilder|QueryBuilder $the_query)
     {
         $request = request();
@@ -115,7 +114,6 @@ trait Query
 
         return $the_query;
     }
-
 
     private function getPaginationData()
     {
@@ -169,7 +167,6 @@ trait Query
         return $ret;
     }
 
-
     protected function queryCustomFilter(EloquentBuilder|QueryBuilder $the_query)
     {
         if ($this->query_custom_filter == null) return $the_query;
@@ -177,14 +174,12 @@ trait Query
         return is_callable($this->query_custom_filter) ? ($this->query_custom_filter)($the_query) : $this->query_custom_filter;
     }
 
-
     public function setQueryCustomFilter(callable|EloquentBuilder|QueryBuilder $query)
     {
         $this->query_custom_filter = $query;
 
         return $this;
     }
-
 
     private function querySearch(EloquentBuilder|QueryBuilder $the_query)
     {
@@ -198,7 +193,7 @@ trait Query
 
             $the_query = $the_query->where(function($query) use($db_cols_initial, $search_value){
                 foreach($db_cols_initial as $index=>$e_col){
-                    if($index == 0) $query->where($e_col, 'LIKE', "%".$search_value."%");
+                    if ($index == 0) $query->where($e_col, 'LIKE', "%".$search_value."%");
                     else $query->orWhere($e_col, 'LIKE', "%".$search_value."%");
                 }
             });
@@ -207,11 +202,9 @@ trait Query
         return $the_query;
     }
 
-
     private function getSearchValue(): string
     {
-        $is_search_enable = $this->is_search_enable ?? false;
-        if (!$is_search_enable) return '';
+        if (! $this->is_search_enable) return '';
 
         $request = request();
         $frontend_framework = $this->frontend_framework ?? config('sd-datatable-two-ssp.frontend_framework', 'others');
@@ -235,7 +228,6 @@ trait Query
         return $search_value;
     }
 
-
     public function enableSearch(bool $enable = true)
     {
         $this->is_search_enable = $enable;
@@ -243,6 +235,12 @@ trait Query
         return $this;
     }
 
+    public function disableSorting(bool $disable = true)
+    {
+        $this->is_sort_enable = !$disable;
+
+        return $this;
+    }
 
     public function setAllowedItemsPerPage(int|array $allowed_items_per_page)
     {
