@@ -269,6 +269,11 @@ trait Query
 
     private function isSortable(array $dt_col): bool
     {
-        return (!isset($dt_col['db']) && isset($dt_col['db_fake'])) ? false : (isset($dt_col['sortable']) ? $dt_col['sortable'] : true);
+        if (!isset($dt_col['db']) && isset($dt_col['db_fake'])) {
+            if (!isset($dt_col['formatter'])) return true;
+            return false;
+        }
+
+        return isset($dt_col['sortable']) ? $dt_col['sortable'] : true;
     }
 }
