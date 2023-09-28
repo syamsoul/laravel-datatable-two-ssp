@@ -72,7 +72,7 @@ class SSP
             } else if (isset($dt_col['db_fake'])) $db_col = $dt_col['db_fake'];
 
             $dt_col_label = $dt_col['label'] ?? ucwords(str_replace("_", " ", Str::snake($db_col)));
-            $sortable = (!isset($dt_col['db']) && isset($dt_col['db_fake'])) ? false : (isset($dt_col['sortable']) ? $dt_col['sortable'] : true);
+            $sortable = $this->isSortable($dt_col);
 
             if ($frontend_framework == "datatablejs") {
 
@@ -365,7 +365,8 @@ class SSP
             foreach ($db_cols_final as $key_2 => $e_db_col) {
                 $e_db_col_filtered = trim(str_replace($this->db_fake_identifier, "", $e_db_col));
                 if (strpos($e_db_col, $this->db_fake_identifier) !== false) {
-                    $the_query_data[$key][$e_db_col_filtered] = $formatter[$key_2]($e_tqde);
+                    if(isset($formatter[$key_2])) $the_query_data[$key][$e_db_col_filtered] = $formatter[$key_2]($e_tqde);
+                    else $the_query_data[$key][$e_db_col_filtered] = $e_tqde->{$e_db_col_filtered};
                 } else {
                     if (isset($formatter[$key_2])) {
                         if(is_callable($formatter[$key_2])) $the_query_data[$key][$e_db_col_filtered] = $formatter[$key_2]($e_tqde->{$e_db_col_filtered}, $e_tqde);

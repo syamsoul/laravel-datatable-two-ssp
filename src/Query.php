@@ -58,10 +58,24 @@ trait Query
         $frontend_framework = $this->frontend_framework ?? config('sd-datatable-two-ssp.frontend_framework', 'others');
 
         $arranged_cols_details = $this->getArrangedColsDetails();
+        $dt_cols = $arranged_cols_details['dt_cols'];
         $db_cols_mid = $arranged_cols_details['db_cols_mid'];
         $db_cols_final = $arranged_cols_details['db_cols_final'];
+        
+        $sortable_cols = [];
+
+        foreach ($dt_cols as $index => $dt_col) {
+            if ($this->isSortable($dt_col)) $sortable_cols[$index] = $db_cols_final[$index];
+        }
 
         if ($frontend_framework == "datatablejs") {
+            $request->validate([
+                'order' => ['filled', 'array'],
+                'order.*.column' => ['required', 'in:' . implode(",", array_keys($sortable_cols))],
+                'order.*.dir' => ['required', 'in:asc,desc'],
+            ],[
+                'sortDesc.in' => 'Sort desc must be either 1,0,true or false',
+            ]);
 
             if ($request->filled('order')) {
                 $the_query->orderBy($db_cols_mid[$request->order[0]["column"]], $request->order[0]['dir']);
@@ -71,9 +85,11 @@ trait Query
 
             if ($request->filled('sortBy') && $request->filled('sortDesc')) {
                 $request->validate([
+                    'sortBy' => ['in:' . implode(",", $sortable_cols)],
                     'sortDesc' => ['in:1,0,true,false'],
                 ],[
-                    'sortDesc.in' => 'Sort desc must be either 1,0,true or false',
+                    'sortBy.in' => 'Selected sortBy is invalid. Allowed sortBy: ' . implode(",", $sortable_cols),
+                    'sortDesc.in' => 'sortDesc must be either 1,0,true or false',
                 ]);
 
                 $sortDesc = $request->sortDesc;
@@ -82,7 +98,9 @@ trait Query
                     $sortDesc = filter_var($request->sortDesc, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false;
                 }
 
-                $the_query->orderBy($db_cols_mid[array_flip($db_cols_final)[$request->sortBy]], ($sortDesc ? 'desc':'asc'));
+                $col_index = array_flip($db_cols_final)[$request->sortBy];
+
+                $the_query->orderBy($db_cols_mid[$col_index], ($sortDesc ? 'desc':'asc'));
             }
 
         }
@@ -247,5 +265,10 @@ trait Query
         $this->allowed_items_per_page = $allowed_items_per_page;
 
         return $this;
+    }
+
+    private function isSortable(array $dt_col): bool
+    {
+        return (!isset($dt_col['db']) && isset($dt_col['db_fake'])) ? false : (isset($dt_col['sortable']) ? $dt_col['sortable'] : true);
     }
 }
