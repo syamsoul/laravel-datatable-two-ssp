@@ -65,7 +65,7 @@ trait Query
         $sortable_cols = [];
 
         foreach ($dt_cols as $index => $dt_col) {
-            if ($this->isSortable($dt_col)) $sortable_cols[$index] = $db_cols_final[$index];
+            if ($this->isSortable($dt_col)) $sortable_cols[$index] = trim(str_replace($this->db_fake_identifier, "", $db_cols_final[$index]));
         }
 
         if ($frontend_framework == "datatablejs") {
