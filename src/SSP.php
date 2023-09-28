@@ -363,7 +363,7 @@ class SSP
         foreach ($the_query_data_eloq as $key => $e_tqde) {
             $the_query_data[$key] = [];
             foreach ($db_cols_final as $key_2 => $e_db_col) {
-                $e_db_col_filtered = trim(str_replace($this->db_fake_identifier, "", $e_db_col));
+                $e_db_col_filtered = $this->filterColName($e_db_col);
                 if (strpos($e_db_col, $this->db_fake_identifier) !== false) {
                     if(isset($formatter[$key_2])) $the_query_data[$key][$e_db_col_filtered] = $formatter[$key_2]($e_tqde);
                     else $the_query_data[$key][$e_db_col_filtered] = $e_tqde->{$e_db_col_filtered};
@@ -420,5 +420,28 @@ class SSP
         
         $reflector = new ReflectionMethod($this, $method_name);
         return ($reflector->getDeclaringClass()->getName() === $current_class);
+    }
+
+    private function isSortable(array $dt_col): bool
+    {
+        if (!isset($dt_col['db']) && isset($dt_col['db_fake'])) {
+            if (!isset($dt_col['formatter'])) return true;
+            return false;
+        }
+
+        return isset($dt_col['sortable']) ? $dt_col['sortable'] : true;
+    }
+
+    private function filterColName(string|array $cols): string|array
+    {
+        $filter = function ($v) {
+            return trim(str_replace($this->db_fake_identifier, "", $v));
+        };
+
+        if (is_string($cols)) return $filter($cols);
+
+        foreach ($cols as $key => $col) $cols[$key] = $filter($col);
+
+        return $cols;
     }
 }

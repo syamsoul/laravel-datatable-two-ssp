@@ -65,7 +65,7 @@ trait Query
         $sortable_cols = [];
 
         foreach ($dt_cols as $index => $dt_col) {
-            if ($this->isSortable($dt_col)) $sortable_cols[$index] = trim(str_replace($this->db_fake_identifier, "", $db_cols_final[$index]));
+            if ($this->isSortable($dt_col)) $sortable_cols[$index] = $this->filterColName($db_cols_final[$index]);
         }
 
         if ($frontend_framework == "datatablejs") {
@@ -98,9 +98,9 @@ trait Query
                     $sortDesc = filter_var($request->sortDesc, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false;
                 }
 
-                $col_index = array_flip($db_cols_final)[$request->sortBy];
+                $col_index = array_flip($this->filterColName($db_cols_final))[$request->sortBy];
 
-                $the_query->orderBy($db_cols_mid[$col_index], ($sortDesc ? 'desc':'asc'));
+                $the_query->orderBy($this->filterColName($db_cols_mid[$col_index]), ($sortDesc ? 'desc':'asc'));
             }
 
         }
@@ -265,15 +265,5 @@ trait Query
         $this->allowed_items_per_page = $allowed_items_per_page;
 
         return $this;
-    }
-
-    private function isSortable(array $dt_col): bool
-    {
-        if (!isset($dt_col['db']) && isset($dt_col['db_fake'])) {
-            if (!isset($dt_col['formatter'])) return true;
-            return false;
-        }
-
-        return isset($dt_col['sortable']) ? $dt_col['sortable'] : true;
     }
 }
