@@ -425,8 +425,7 @@ class SSP
     private function isSortable(array $dt_col): bool
     {
         if (!isset($dt_col['db']) && isset($dt_col['db_fake'])) {
-            if (!isset($dt_col['formatter'])) return true;
-            return false;
+            if (isset($dt_col['formatter'])) return false;
         }
 
         return isset($dt_col['sortable']) ? $dt_col['sortable'] : true;
