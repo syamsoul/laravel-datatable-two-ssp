@@ -266,4 +266,19 @@ trait Query
 
         return $this;
     }
+
+    public function getAllowedItemsPerPage()
+    {
+        return $this->allowed_items_per_page;
+    }
+
+    public function isSearchEnabled(): bool
+    {
+        return $this->is_search_enable;
+    }
+
+    public function isSortingEnabled(): bool
+    {
+        return $this->is_sort_enable;
+    }
 }
