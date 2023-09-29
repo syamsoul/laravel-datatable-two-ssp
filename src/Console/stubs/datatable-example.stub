@@ -8,10 +8,10 @@ final class {{ class }} extends SSP
 {
     public function __construct()
     {
-        $this->is_search_enable = true;
-        $this->is_sort_enable = true;
-        $this->allowed_items_per_page = [10, 20, 50, 100];
-        $this->frontend_framework = 'others';
+        $this->enableSearch(true);
+        $this->disableSorting(false);
+        $this->setAllowedItemsPerPage([5, 10, 20]);
+        $this->setFrontendFramework('others');
     }
 
     protected function columns()
