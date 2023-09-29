@@ -6,9 +6,13 @@ use SoulDoit\DataTableTwo\SSP;
 
 final class {{ class }} extends SSP
 {
-    protected $is_search_enable = true;
-    protected $allowed_items_per_page = [10, 20, 50, 100];
-    protected $frontend_framework = 'others';
+    public function __construct()
+    {
+        $this->is_search_enable = true;
+        $this->is_sort_enable = true;
+        $this->allowed_items_per_page = [10, 20, 50, 100];
+        $this->frontend_framework = 'others';
+    }
 
     protected function columns()
     {

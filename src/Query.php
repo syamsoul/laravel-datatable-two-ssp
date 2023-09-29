@@ -13,9 +13,9 @@ trait Query
     private $query_custom_filter;
     private $pagination_data;
 
-    protected int|array|null $allowed_items_per_page = null;
-    protected bool $is_search_enable = false;
-    protected bool $is_sort_enable = true;
+    private int|array|null $allowed_items_per_page = null;
+    private bool $is_search_enable = false;
+    private bool $is_sort_enable = true;
 
     protected function query(array $selected_columns)
     {
