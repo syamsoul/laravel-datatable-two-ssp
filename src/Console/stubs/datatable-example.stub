@@ -28,6 +28,7 @@ final class {{ class }} extends SSP
         return \App\Models\User::select($selected_columns);
     }
 
+    // This is optional. You can remove this method if not needed.
     protected function queryCustomFilter($query)
     {
         $request = request();
@@ -47,4 +48,10 @@ final class {{ class }} extends SSP
 
         return $query;
     }
+
+    // This is optional. This method can be used to customize count query. You can remove this method if want to use default count query.
+    // protected function queryCount($query)
+    // {
+    //     return $query->count();
+    // }
 }

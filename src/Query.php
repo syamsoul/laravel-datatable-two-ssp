@@ -22,17 +22,17 @@ trait Query
         return is_callable($this->dt_query) ? ($this->dt_query)($selected_columns) : $this->dt_query;
     }
 
-    protected function queryCount(EloquentBuilder|QueryBuilder $the_query)
+    protected function queryCount(EloquentBuilder|QueryBuilder $query)
     {
         if ($this->query_count == null) {
-            if ($the_query instanceof EloquentBuilder) {
-                if (!empty($the_query->getQuery()->groups)) return $the_query->getQuery()->getCountForPagination();
+            if ($query instanceof EloquentBuilder) {
+                if (!empty($query->getQuery()->groups)) return $query->getQuery()->getCountForPagination();
             }
             
-            return $the_query->count();
+            return $query->count();
         }
 
-        return is_callable($this->query_count) ? ($this->query_count)($the_query) : $this->query_count;
+        return is_callable($this->query_count) ? ($this->query_count)($query) : $this->query_count;
     }
 
     public function setQuery(callable|EloquentBuilder|QueryBuilder $query)
@@ -49,9 +49,9 @@ trait Query
         return $this;
     }
 
-    private function queryOrder(EloquentBuilder|QueryBuilder $the_query)
+    private function queryOrder(EloquentBuilder|QueryBuilder $query)
     {
-        if (! $this->is_sort_enable) return $the_query;
+        if (! $this->is_sort_enable) return $query;
 
         $request = request();
 
@@ -78,7 +78,7 @@ trait Query
             ]);
 
             if ($request->filled('order')) {
-                $the_query->orderBy($db_cols_mid[$request->order[0]["column"]], $request->order[0]['dir']);
+                $query->orderBy($db_cols_mid[$request->order[0]["column"]], $request->order[0]['dir']);
             }
 
         } else if (in_array($frontend_framework, ["vuetify", "others"])) {
@@ -100,15 +100,15 @@ trait Query
 
                 $col_index = array_flip($this->filterColName($db_cols_final))[$request->sortBy];
 
-                $the_query->orderBy($this->filterColName($db_cols_mid[$col_index]), ($sortDesc ? 'desc':'asc'));
+                $query->orderBy($this->filterColName($db_cols_mid[$col_index]), ($sortDesc ? 'desc':'asc'));
             }
 
         }
 
-        return $the_query;
+        return $query;
     }
 
-    private function queryPagination(EloquentBuilder|QueryBuilder $the_query)
+    private function queryPagination(EloquentBuilder|QueryBuilder $query)
     {
         $request = request();
 
@@ -127,10 +127,10 @@ trait Query
                 }
             }
 
-            if ($pagination_data['items_per_page'] != "-1") $the_query->limit($pagination_data['items_per_page'])->offset($pagination_data['offset']);
+            if ($pagination_data['items_per_page'] != "-1") $query->limit($pagination_data['items_per_page'])->offset($pagination_data['offset']);
         }
 
-        return $the_query;
+        return $query;
     }
 
     private function getPaginationData()
@@ -185,11 +185,11 @@ trait Query
         return $ret;
     }
 
-    protected function queryCustomFilter(EloquentBuilder|QueryBuilder $the_query)
+    protected function queryCustomFilter(EloquentBuilder|QueryBuilder $query)
     {
-        if ($this->query_custom_filter == null) return $the_query;
+        if ($this->query_custom_filter == null) return $query;
 
-        return is_callable($this->query_custom_filter) ? ($this->query_custom_filter)($the_query) : $this->query_custom_filter;
+        return is_callable($this->query_custom_filter) ? ($this->query_custom_filter)($query) : $this->query_custom_filter;
     }
 
     public function setQueryCustomFilter(callable|EloquentBuilder|QueryBuilder $query)
@@ -199,7 +199,7 @@ trait Query
         return $this;
     }
 
-    private function querySearch(EloquentBuilder|QueryBuilder $the_query)
+    private function querySearch(EloquentBuilder|QueryBuilder $query)
     {
         $search_value = $this->getSearchValue();
 
@@ -209,15 +209,15 @@ trait Query
             $db_cols_mid = $arranged_cols_details['db_cols_mid'];
             $db_cols_final = $arranged_cols_details['db_cols_final'];
 
-            $the_query = $the_query->where(function($query) use($db_cols_initial, $search_value){
-                foreach($db_cols_initial as $index=>$e_col){
-                    if ($index == 0) $query->where($e_col, 'LIKE', "%".$search_value."%");
-                    else $query->orWhere($e_col, 'LIKE', "%".$search_value."%");
+            $query = $query->where(function($the_query) use($db_cols_initial, $search_value){
+                foreach ($db_cols_initial as $index => $e_col) {
+                    if ($index == 0) $the_query->where($e_col, 'LIKE', "%".$search_value."%");
+                    else $the_query->orWhere($e_col, 'LIKE', "%".$search_value."%");
                 }
             });
         }
 
-        return $the_query;
+        return $query;
     }
 
     private function getSearchValue(): string

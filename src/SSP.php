@@ -21,13 +21,12 @@ class SSP
     private $arranged_cols_details;
     private $db_fake_identifier = '||-----FAKE-----||';
     
-    protected $frontend_framework = null;
+    private $frontend_framework = null;
 
     protected function columns()
     {
         return $this->dt_columns;
     }
-
 
     public function setColumns(array $columns)
     {
@@ -36,7 +35,6 @@ class SSP
         return $this;
     }
 
-
     private function getColumns(): array
     {
         return array_map(function($v) {
@@ -44,7 +42,6 @@ class SSP
             return $v;
         }, $this->columns());
     }
-
 
     public function getFrontEndColumns(): array
     {
@@ -109,7 +106,6 @@ class SSP
         return $frontend_dt_cols;
     }
 
-
     public function getData(bool $return_json = true)
     {
         $request = request();
@@ -123,33 +119,33 @@ class SSP
         $db_cols = $arranged_cols_details['db_cols'];
         $db_cols_final = $arranged_cols_details['db_cols_final'];
 
-        $the_query = $this->query($db_cols);
+        $query = $this->query($db_cols);
 
-        if ($the_query != null) {
+        if ($query != null) {
 
-            $the_query_count = $this->queryCount($the_query);
+            $query_count = $this->queryCount($query);
 
-            $the_query = $this->querySearch($the_query);
+            $query = $this->querySearch($query);
 
             $has_custom_filter_query = false;
 
             if ($this->query_custom_filter != null || $this->isMethodOverridden('queryCustomFilter')) {
-                $the_custom_filter_query = $this->queryCustomFilter($the_query);
+                $the_custom_filter_query = $this->queryCustomFilter($query);
                 
                 if (gettype($the_custom_filter_query) == 'object') {
                     if ($the_custom_filter_query instanceof EloquentBuilder || $the_custom_filter_query instanceof QueryBuilder) {
                         $has_custom_filter_query = true;
-                        $the_query = $the_custom_filter_query;
+                        $query = $the_custom_filter_query;
                     }
                 }
             }
 
-            $the_query_filtered_count = (empty($this->getSearchValue()) && !$has_custom_filter_query) ? $the_query_count : $this->queryCount($the_query);
+            $query_filtered_count = (empty($this->getSearchValue()) && !$has_custom_filter_query) ? $query_count : $this->queryCount($query);
 
-            $the_query = $this->queryOrder($the_query);
-            $the_query = $this->queryPagination($the_query);
+            $query = $this->queryOrder($query);
+            $query = $this->queryPagination($query);
 
-            $the_query_data = $this->getFormattedData($the_query);
+            $query_data = $this->getFormattedData($query);
 
             if ($frontend_framework == "datatablejs") {
 
@@ -160,7 +156,7 @@ class SSP
                 }
 
                 $new_query_data = [];
-                foreach ($the_query_data as $key => $e_tqdata) {
+                foreach ($query_data as $key => $e_tqdata) {
                     $e_new_cols_data = [];
                     foreach ($e_tqdata as $e_e_col_name => $e_e_col_value) {
                         $e_new_cols_data[$pair_key_column_index[$e_e_col_name]] = $e_e_col_value;
@@ -170,8 +166,8 @@ class SSP
 
                 $ret['draw'] = $request->draw ?? 0;
                 $ret['data'] = $new_query_data;
-                $ret['recordsTotal'] = $the_query_count;
-                $ret['recordsFiltered'] = $the_query_filtered_count;
+                $ret['recordsTotal'] = $query_count;
+                $ret['recordsFiltered'] = $query_filtered_count;
 
             } else if (in_array($frontend_framework, ["vuetify", "others"])) {
 
@@ -180,7 +176,7 @@ class SSP
                 $pagination_data = $this->getPaginationData();
 
                 if (!empty($pagination_data)) {
-                    $current_page_item_count = count($the_query_data);
+                    $current_page_item_count = count($query_data);
                     $current_item_position_start = $current_page_item_count == 0 ? 0 : ($pagination_data['offset'] + 1);
                     $current_item_position_end = $current_page_item_count == 0 ? 0 : ($current_item_position_start + $current_page_item_count) - 1;
 
@@ -192,9 +188,9 @@ class SSP
                 }
 
                 $ret['data'] = array_merge($ret['data'], [
-                    'total_item_count' => $the_query_count,
-                    'total_filtered_item_count' => $the_query_filtered_count,
-                    'items' => $the_query_data,
+                    'total_item_count' => $query_count,
+                    'total_filtered_item_count' => $query_filtered_count,
+                    'items' => $query_data,
                 ]);
             }
 
@@ -206,7 +202,6 @@ class SSP
         
         return $ret;
     }
-
 
     public function getCsvFile()
     {
@@ -238,33 +233,33 @@ class SSP
             'Pragma'              => 'public'
         ];
 
-        $the_query = $this->query($this->getArrangedColsDetails()['db_cols']);
+        $query = $this->query($this->getArrangedColsDetails()['db_cols']);
 
-        $the_query = $this->querySearch($the_query);
+        $query = $this->querySearch($query);
 
         if ($this->query_custom_filter != null || $this->isMethodOverridden('queryCustomFilter')) {
-            $the_custom_filter_query = $this->queryCustomFilter($the_query);
+            $the_custom_filter_query = $this->queryCustomFilter($query);
             
             if (gettype($the_custom_filter_query) == 'object') {
                 if ($the_custom_filter_query instanceof EloquentBuilder || $the_custom_filter_query instanceof QueryBuilder) {
-                    $the_query = $the_custom_filter_query;
+                    $query = $the_custom_filter_query;
                 }
             }
         }
 
-        $the_query = $this->queryOrder($the_query);
+        $query = $this->queryOrder($query);
 
-        $the_query_data = $this->getFormattedData($the_query, true);
+        $query_data = $this->getFormattedData($query, true);
 
         // add headers for each column in the CSV download
         $dt_cols = $this->getColumns();
         foreach ($dt_cols as $index => $e_dt_col) {
             if (! ($e_dt_col['is_include_in_doc'] ?? true)) unset($dt_cols[$index]);
         }
-        array_unshift($the_query_data, collect($dt_cols)->pluck('label')->toArray());
+        array_unshift($query_data, collect($dt_cols)->pluck('label')->toArray());
 
         //check if value in each columns is string
-        foreach ($the_query_data as $row) {
+        foreach ($query_data as $row) {
             foreach ($row as $e_col) {
                 if (!is_string($e_col) && !is_numeric($e_col) && $e_col !== null) {
                     if ($is_cache_lock_enable) $lock->release();
@@ -273,9 +268,9 @@ class SSP
             }
         }
 
-        $callback = function() use($the_query_data) {
+        $callback = function() use($query_data) {
             $file = fopen('php://output', 'w');
-            foreach ($the_query_data as $row) fputcsv($file, $row);
+            foreach ($query_data as $row) fputcsv($file, $row);
             fclose($file);
         };
 
@@ -283,7 +278,6 @@ class SSP
 
         return response()->stream($callback, 200, $headers);
     }
-
 
     private function getArrangedColsDetails(bool $is_for_doc = false) : array
     {
@@ -349,46 +343,45 @@ class SSP
         return $arranged_cols_details;
     }
 
-
-    private function getFormattedData(EloquentBuilder|QueryBuilder $the_query, bool $is_for_doc = false) : array
+    private function getFormattedData(EloquentBuilder|QueryBuilder $query, bool $is_for_doc = false) : array
     {
-        $the_query_data_eloq = $the_query->get();
+        $query_data_eloq = $query->get();
 
         $arranged_cols_details = $this->getArrangedColsDetails($is_for_doc);
         $db_cols = $arranged_cols_details['db_cols'];
         $db_cols_final = $arranged_cols_details['db_cols_final'];
         $formatter = $arranged_cols_details['formatter'];
 
-        $the_query_data = [];
-        foreach ($the_query_data_eloq as $key => $e_tqde) {
-            $the_query_data[$key] = [];
+        $query_data = [];
+        foreach ($query_data_eloq as $key => $e_tqde) {
+            $query_data[$key] = [];
             foreach ($db_cols_final as $key_2 => $e_db_col) {
                 $e_db_col_filtered = $this->filterColName($e_db_col);
                 if (strpos($e_db_col, $this->db_fake_identifier) !== false) {
-                    if(isset($formatter[$key_2])) $the_query_data[$key][$e_db_col_filtered] = $formatter[$key_2]($e_tqde);
-                    else $the_query_data[$key][$e_db_col_filtered] = $e_tqde->{$e_db_col_filtered};
+                    if (isset($formatter[$key_2])) $query_data[$key][$e_db_col_filtered] = $formatter[$key_2]($e_tqde);
+                    else $query_data[$key][$e_db_col_filtered] = $e_tqde->{$e_db_col_filtered};
                 } else {
                     if (isset($formatter[$key_2])) {
-                        if(is_callable($formatter[$key_2])) $the_query_data[$key][$e_db_col_filtered] = $formatter[$key_2]($e_tqde->{$e_db_col_filtered}, $e_tqde);
-                        elseif(is_string($formatter[$key_2])) $the_query_data[$key][$e_db_col_filtered] = strtr($formatter[$key_2], ["{value}"=>$e_tqde->{$e_db_col_filtered}]);
+                        if (is_callable($formatter[$key_2])) $query_data[$key][$e_db_col_filtered] = $formatter[$key_2]($e_tqde->{$e_db_col_filtered}, $e_tqde);
+                        else if (is_string($formatter[$key_2])) $query_data[$key][$e_db_col_filtered] = strtr($formatter[$key_2], ["{value}"=>$e_tqde->{$e_db_col_filtered}]);
                     } else {
-                        $the_query_data[$key][$e_db_col_filtered] = $e_tqde->{$e_db_col_filtered};
+                        $query_data[$key][$e_db_col_filtered] = $e_tqde->{$e_db_col_filtered};
                     }
                 }
 
                 if ($is_for_doc) {
-                    $value = $the_query_data[$key][$e_db_col_filtered];
+                    $value = $query_data[$key][$e_db_col_filtered];
                     
                     if (is_array($value)) {
-                        $the_query_data[$key][$e_db_col_filtered] = json_encode($value);
+                        $query_data[$key][$e_db_col_filtered] = json_encode($value);
                     } else if (is_string($value)) {
-                        $the_query_data[$key][$e_db_col_filtered] = strip_tags($value);
+                        $query_data[$key][$e_db_col_filtered] = strip_tags($value);
                     }
                 }
             }
         }
 
-        return $the_query_data;
+        return $query_data;
     }
 
     public function setFrontendFramework(string $frontend_framework)
