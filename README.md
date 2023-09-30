@@ -107,6 +107,8 @@ class UserListController extends Controller
         $dt->setQuery(function ($selected_columns) {
             return \App\Models\User::select($selected_columns);
         });
+
+        return $dt->getData(); // return JSON response
     }
 }
 ```
