@@ -68,7 +68,7 @@ use SoulDoit\DataTableTwo\SSP;
 ```
 &nbsp;
 
-And then add the trait to your controller:
+And then inject the SSP service to your controller:
 ```php
 namespace App\Http\Controllers;
 
@@ -77,7 +77,10 @@ use SoulDoit\DataTableTwo\SSP;
 
 class UserListController extends Controller
 {
-    use SSP;
+    public function index(SSP $dt)
+    {
+        // do something here
+    }
 ```
 
 &nbsp;
@@ -92,22 +95,18 @@ use SoulDoit\DataTableTwo\SSP;
 
 class UserListController extends Controller
 {
-    use SSP;
-
-    private function dtColumns()
+    public function index(SSP $dt)
     {
-        return [
+        $dt->setColumns([
             ['label'=>'ID',         'db'=>'id'          ],
             ['label'=>'Email',      'db'=>'email'       ],
             ['label'=>'Username',   'db'=>'username'    ],
             ['label'=>'Created At', 'db'=>'created_at'  ],
-        ];
-    }
+        ]);
 
-
-    private function dtQuery($selected_columns)
-    {
-        return \App\Models\User::select($selected_columns);
+        $dt->setQuery(function ($selected_columns) {
+            return \App\Models\User::select($selected_columns);
+        });
     }
 }
 ```
