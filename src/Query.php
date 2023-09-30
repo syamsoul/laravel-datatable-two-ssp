@@ -3,8 +3,6 @@ namespace SoulDoit\DataTableTwo;
 
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Query\Builder as QueryBuilder;
-use SoulDoit\DataTableTwo\Exceptions\PageAndItemsPerPageParametersAreRequired;
-use SoulDoit\DataTableTwo\Exceptions\InvalidItemsPerPageValue;
 
 trait Query
 {
@@ -28,7 +26,7 @@ trait Query
             if ($query instanceof EloquentBuilder) {
                 if (!empty($query->getQuery()->groups)) return $query->getQuery()->getCountForPagination();
             }
-            
+
             return $query->count();
         }
 
@@ -73,7 +71,7 @@ trait Query
                 'order' => ['filled', 'array'],
                 'order.*.column' => ['required', 'in:' . implode(",", array_keys($sortable_cols))],
                 'order.*.dir' => ['required', 'in:asc,desc'],
-            ],[
+            ], [
                 'sortDesc.in' => 'Sort desc must be either 1,0,true or false',
             ]);
 
@@ -115,18 +113,6 @@ trait Query
         $pagination_data = $this->getPaginationData();
 
         if (isset($pagination_data['items_per_page']) && isset($pagination_data['offset'])) {
-            if (!empty($this->allowed_items_per_page)) {
-                $allowed_items_per_page = is_numeric($this->allowed_items_per_page) ? [$this->allowed_items_per_page] : (is_array($this->allowed_items_per_page) ? $this->allowed_items_per_page : null);
-                
-                if (is_array($allowed_items_per_page)) {
-                    $allowed_items_per_page = array_map(function($v){ return intval($v); }, $allowed_items_per_page);
-
-                    if (!in_array($pagination_data['items_per_page'], $allowed_items_per_page)) {
-                        throw InvalidItemsPerPageValue::create($pagination_data['items_per_page'], $allowed_items_per_page);
-                    }
-                }
-            }
-
             if ($pagination_data['items_per_page'] != "-1") $query->limit($pagination_data['items_per_page'])->offset($pagination_data['offset']);
         }
 
@@ -160,25 +146,33 @@ trait Query
 
             if ($request->filled('itemsPerPage') && $request->filled('page')) {
                 $ret['items_per_page'] = $request->itemsPerPage;
-                $ret['offset'] = ($request->page - 1) * $request->itemsPerPage;    
+                $ret['offset'] = ($request->page - 1) * $request->itemsPerPage;
             }
 
         }
 
-        if (empty($ret)) {
-            if (!empty($this->allowed_items_per_page)) {
-                if (is_numeric($this->allowed_items_per_page) || is_array($this->allowed_items_per_page)) {
-                    $aipp = $this->allowed_items_per_page;
-                    if (is_numeric($aipp)) $aipp = [$aipp];
-                    if (!in_array(-1, $aipp)) throw PageAndItemsPerPageParametersAreRequired::create($firstRequestName, $secondRequestName);
+        $validation_rules = [
+            $firstRequestName => ['required_with:'.$secondRequestName],
+            $secondRequestName => ['required_with:'.$firstRequestName],
+        ];
+
+        $validation_error_messages = [];
+
+        if (!empty($this->allowed_items_per_page)) {
+            $allowed_items_per_page = is_numeric($this->allowed_items_per_page) ? [$this->allowed_items_per_page] : (is_array($this->allowed_items_per_page) ? $this->allowed_items_per_page : null);
+
+            if (is_array($allowed_items_per_page)) {
+                $allowed_items_per_page = array_map(function($v){ return intval($v); }, $allowed_items_per_page);
+
+                if (!in_array(-1, $allowed_items_per_page)) {
+                    array_push($validation_rules[$firstRequestName], 'required');
+                    array_push($validation_rules[$secondRequestName], 'required', 'in:' . implode(',', $allowed_items_per_page));
+                    $validation_error_messages["$secondRequestName.in"] = "The selected $secondRequestName is invalid. Available options: " . implode(',', $allowed_items_per_page);
                 }
             }
         }
 
-        $request->validate([
-            $firstRequestName => ['required_with:'.$secondRequestName],
-            $secondRequestName => ['required_with:'.$firstRequestName],
-        ]);
+        $request->validate($validation_rules, $validation_error_messages);
 
         $this->pagination_data = $ret;
 
