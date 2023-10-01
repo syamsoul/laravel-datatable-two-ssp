@@ -11,7 +11,7 @@ trait Query
     private $query_custom_filter;
     private $pagination_data;
 
-    private int|array|null $allowed_items_per_page = null;
+    private array|null $allowed_items_per_page = null;
     private bool $is_search_enable = false;
     private bool $is_sort_enable = true;
 
@@ -158,7 +158,7 @@ trait Query
         $validation_error_messages = [];
 
         if (!empty($this->allowed_items_per_page)) {
-            $allowed_items_per_page = is_numeric($this->allowed_items_per_page) ? [$this->allowed_items_per_page] : (is_array($this->allowed_items_per_page) ? $this->allowed_items_per_page : null);
+            $allowed_items_per_page = $this->getAllowedItemsPerPage();
 
             if (is_array($allowed_items_per_page)) {
                 $allowed_items_per_page = array_map(function($v){ return intval($v); }, $allowed_items_per_page);
@@ -255,12 +255,12 @@ trait Query
 
     public function setAllowedItemsPerPage(int|array $allowed_items_per_page)
     {
-        $this->allowed_items_per_page = $allowed_items_per_page;
+        $this->allowed_items_per_page = is_numeric($allowed_items_per_page) ? [$allowed_items_per_page] : (is_array($allowed_items_per_page) ? $allowed_items_per_page : null);
 
         return $this;
     }
 
-    public function getAllowedItemsPerPage()
+    public function getAllowedItemsPerPage(): ?array
     {
         return $this->allowed_items_per_page;
     }
