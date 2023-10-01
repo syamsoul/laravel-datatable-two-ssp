@@ -421,7 +421,7 @@ class SSP
             if (isset($dt_col['formatter'])) return false;
         }
 
-        return isset($dt_col['sortable']) ? $dt_col['sortable'] : true;
+        return isset($dt_col['sortable']) ? $dt_col['sortable'] : $this->is_sort_enable;
     }
 
     private function filterColName(string|array $cols): string|array

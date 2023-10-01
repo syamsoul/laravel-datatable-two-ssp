@@ -49,8 +49,6 @@ trait Query
 
     private function queryOrder(EloquentBuilder|QueryBuilder $query)
     {
-        if (! $this->is_sort_enable) return $query;
-
         $request = request();
 
         $frontend_framework = $this->frontend_framework ?? config('sd-datatable-two-ssp.frontend_framework', 'others');
@@ -72,7 +70,8 @@ trait Query
                 'order.*.column' => ['required', 'in:' . implode(",", array_keys($sortable_cols))],
                 'order.*.dir' => ['required', 'in:asc,desc'],
             ], [
-                'sortDesc.in' => 'Sort desc must be either 1,0,true or false',
+                'order.*.column.in' => 'Order column is invalid. Allowed Order column: ' . implode(",", $sortable_cols),
+                'order.*.dir.in' => 'Order dir must be either asc or desc',
             ]);
 
             if ($request->filled('order')) {
