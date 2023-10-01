@@ -8,8 +8,8 @@ final class {{ class }} extends SSP
 {
     public function __construct()
     {
-        $this->enableSearch(true);
-        $this->disableSorting(false);
+        $this->enableSearch();
+        $this->disableSorting();
         $this->setAllowedItemsPerPage([5, 10, 20]);
         $this->setFrontendFramework('others');
     }
