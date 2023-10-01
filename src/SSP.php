@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Database\Query\Expression;
+use Illuminate\Http\JsonResponse;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Illuminate\Support\Str;
 use SoulDoit\DataTableTwo\Exceptions\RawExpressionMustHaveAliasName;
 use SoulDoit\DataTableTwo\Exceptions\ValueInCsvColumnsMustBeString;
@@ -106,7 +108,7 @@ class SSP
         return $frontend_dt_cols;
     }
 
-    public function getData(bool $return_json = true)
+    public function getData(bool $return_json_response = true): JsonResponse|array
     {
         $request = request();
         
@@ -198,12 +200,12 @@ class SSP
 
         }
 
-        if ($return_json) return response()->json($ret);
+        if ($return_json_response) return response()->json($ret);
         
         return $ret;
     }
 
-    public function getCsvFile()
+    public function getCsvFile(): StreamedResponse
     {
         $is_cache_lock_enable = config('sd-datatable-two-ssp.export_to_csv.is_cache_lock_enable', false);
 
