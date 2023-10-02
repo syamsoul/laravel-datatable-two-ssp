@@ -115,7 +115,11 @@ class UserListController extends Controller
             return \App\Models\User::select($selected_columns);
         });
 
-        return $dt->getData(); // return JSON response
+        // return JSON response
+        return $dt->getData();
+
+        // or return CSV file stream response
+        // return $dt->getCsvFile();
     }
 }
 ```
