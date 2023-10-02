@@ -351,6 +351,7 @@ class SSP
         $dt_cols = $arranged_cols_details['dt_cols'];
         $db_cols = $arranged_cols_details['db_cols'];
         $db_cols_final = $arranged_cols_details['db_cols_final'];
+        $db_cols_final_clean = $arranged_cols_details['db_cols_final_clean'];
         $formatter = $arranged_cols_details['formatter'];
 
         $query_data = [];
@@ -366,29 +367,29 @@ class SSP
                     if (! ($dt_col['is_show'] ?? true)) continue;
                 }
 
-                $e_db_col_filtered = $this->filterColName($e_db_col);
+                $e_db_col_clean = $db_cols_final_clean[$key_2];
 
                 if ($this->isDbFake($e_db_col)) {
-                    if (isset($formatter[$key_2])) $query_data[$key][$e_db_col_filtered] = $formatter[$key_2]($e_tqde);
-                    else throw DbFakeMustHaveFormatter::create($e_db_col_filtered);
+                    if (isset($formatter[$key_2])) $query_data[$key][$e_db_col_clean] = $formatter[$key_2]($e_tqde);
+                    else throw DbFakeMustHaveFormatter::create($e_db_col_clean);
                 } else {
                     if (isset($formatter[$key_2])) {
-                        if (is_callable($formatter[$key_2])) $query_data[$key][$e_db_col_filtered] = $formatter[$key_2]($e_tqde->{$e_db_col_filtered}, $e_tqde);
-                        else if (is_string($formatter[$key_2])) $query_data[$key][$e_db_col_filtered] = strtr($formatter[$key_2], ["{value}"=>$e_tqde->{$e_db_col_filtered}]);
+                        if (is_callable($formatter[$key_2])) $query_data[$key][$e_db_col_clean] = $formatter[$key_2]($e_tqde->{$e_db_col_clean}, $e_tqde);
+                        else if (is_string($formatter[$key_2])) $query_data[$key][$e_db_col_clean] = strtr($formatter[$key_2], ["{value}"=>$e_tqde->{$e_db_col_clean}]);
                     } else {
-                        $query_data[$key][$e_db_col_filtered] = $e_tqde->{$e_db_col_filtered};
+                        $query_data[$key][$e_db_col_clean] = $e_tqde->{$e_db_col_clean};
                     }
                 }
 
                 if ($is_for_doc) {
-                    $value = $query_data[$key][$e_db_col_filtered];
+                    $value = $query_data[$key][$e_db_col_clean];
                     
                     if (is_array($value)) {
-                        $query_data[$key][$e_db_col_filtered] = json_encode($value);
+                        $query_data[$key][$e_db_col_clean] = json_encode($value);
                     } else if (is_bool($value)) {
-                        $query_data[$key][$e_db_col_filtered] = $value ? 'true' : 'false';
+                        $query_data[$key][$e_db_col_clean] = $value ? 'true' : 'false';
                     } else if (is_string($value)) {
-                        $query_data[$key][$e_db_col_filtered] = strip_tags($value);
+                        $query_data[$key][$e_db_col_clean] = strip_tags($value);
                     }
                 }
             }
@@ -430,9 +431,7 @@ class SSP
 
     private function isSortable(array $dt_col): bool
     {
-        if (!isset($dt_col['db']) && isset($dt_col['db_fake'])) {
-            if (isset($dt_col['formatter'])) return false;
-        }
+        if (!isset($dt_col['db']) && isset($dt_col['db_fake'])) return false;
 
         return isset($dt_col['sortable']) ? $dt_col['sortable'] : $this->is_sort_enable;
     }
@@ -440,19 +439,6 @@ class SSP
     private function isDbFake($db_col): bool
     {
         return strpos($db_col, $this->db_fake_identifier) !== false;
-    }
-
-    private function filterColName(string|array $cols): string|array
-    {
-        $filter = function ($v) {
-            return trim(str_replace($this->db_fake_identifier, "", $v));
-        };
-
-        if (is_string($cols)) return $filter($cols);
-
-        foreach ($cols as $key => $col) $cols[$key] = $filter($col);
-
-        return $cols;
     }
 
     private function getDtLabel(array $dt_col, string $db_col): string

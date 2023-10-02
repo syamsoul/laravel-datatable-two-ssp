@@ -57,11 +57,12 @@ trait Query
         $dt_cols = $arranged_cols_details['dt_cols'];
         $db_cols_mid = $arranged_cols_details['db_cols_mid'];
         $db_cols_final = $arranged_cols_details['db_cols_final'];
+        $db_cols_final_clean = $arranged_cols_details['db_cols_final_clean'];
         
         $sortable_cols = [];
 
         foreach ($dt_cols as $index => $dt_col) {
-            if ($this->isSortable($dt_col)) $sortable_cols[$index] = $this->filterColName($db_cols_final[$index]);
+            if ($this->isSortable($dt_col)) $sortable_cols[$index] = $db_cols_final_clean[$index];
         }
 
         if ($frontend_framework == "datatablejs") {
@@ -95,9 +96,9 @@ trait Query
                     $sortDesc = filter_var($request->sortDesc, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false;
                 }
 
-                $col_index = array_flip($this->filterColName($db_cols_final))[$request->sortBy];
+                $col_index = array_flip($db_cols_final)[$request->sortBy];
 
-                $query->orderBy($this->filterColName($db_cols_mid[$col_index]), ($sortDesc ? 'desc':'asc'));
+                $query->orderBy($db_cols_mid[$col_index], ($sortDesc ? 'desc':'asc'));
             }
 
         }
