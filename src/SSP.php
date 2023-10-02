@@ -256,7 +256,7 @@ class SSP
 
         // add headers for each column in the CSV download
         array_unshift($query_data, collect($dt_cols)->filter(function ($dt_col) {
-            return ($dt_col['is_show_in_doc'] ?? true);
+            return $dt_col['is_show_in_doc'] ?? ($dt_col['is_show'] ?? true);
         })->map(function ($dt_col, $index) use ($db_cols_final_clean) {
             $dt_col['label'] = $this->getDtLabel($dt_col, $db_cols_final_clean[$index]);
             return $dt_col;
@@ -365,10 +365,12 @@ class SSP
             foreach ($db_cols_final as $key_2 => $e_db_col) {
                 $dt_col = $dt_cols[$key_2];
 
+                $is_show = $dt_col['is_show'] ?? true;
+
                 if ($is_for_doc) {
-                    if (! ($dt_col['is_show_in_doc'] ?? true)) continue;
+                    if (! ($dt_col['is_show_in_doc'] ?? $is_show)) continue;
                 } else {
-                    if (! ($dt_col['is_show'] ?? true)) continue;
+                    if (! $is_show) continue;
                 }
 
                 $e_db_col_clean = $db_cols_final_clean[$key_2];
