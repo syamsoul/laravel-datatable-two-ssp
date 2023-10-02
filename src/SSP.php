@@ -256,7 +256,7 @@ class SSP
         // add headers for each column in the CSV download
         $dt_cols = $this->getColumns();
         foreach ($dt_cols as $index => $e_dt_col) {
-            if (! ($e_dt_col['is_include_in_doc'] ?? true)) unset($dt_cols[$index]);
+            if (! ($e_dt_col['is_show_in_doc'] ?? true)) unset($dt_cols[$index]);
         }
         array_unshift($query_data, collect($dt_cols)->pluck('label')->toArray());
 
@@ -293,7 +293,7 @@ class SSP
 
         foreach ($dt_cols as $key => $dt_col) {
             if ($is_for_doc) {
-                if (! ($dt_col['is_include_in_doc'] ?? true)) continue;
+                if (! ($dt_col['is_show_in_doc'] ?? true)) continue;
             }
 
             if (isset($dt_col['db'])) {
