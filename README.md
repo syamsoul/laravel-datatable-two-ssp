@@ -85,6 +85,14 @@ class UserListController extends Controller
 
 &nbsp;
 &nbsp;
+
+Or, just simply run artisan command to create a DataTable file
+``` bash
+php artisan make:datatable UsersDataTable -e
+```
+
+&nbsp;
+&nbsp;
 ## Example
 
 ```php
