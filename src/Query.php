@@ -207,6 +207,7 @@ trait Query
                 $count = 0;
                 foreach ($db_cols_initial as $index => $e_col) {
                     if (! ($dt_cols[$index]['searchable'] ?? true)) continue;
+                    if ($this->isDbFake($e_col)) continue;
 
                     if ($count == 0) $the_query->where($e_col, 'LIKE', "%".$search_value."%");
                     else $the_query->orWhere($e_col, 'LIKE', "%".$search_value."%");

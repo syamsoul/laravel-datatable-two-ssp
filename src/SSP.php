@@ -11,6 +11,7 @@ use Illuminate\Http\JsonResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Illuminate\Support\Str;
 use SoulDoit\DataTableTwo\Exceptions\RawExpressionMustHaveAliasName;
+use SoulDoit\DataTableTwo\Exceptions\DbFakeMustHaveFormatter;
 use SoulDoit\DataTableTwo\Exceptions\ValueInCsvColumnsMustBeString;
 use SoulDoit\DataTableTwo\Query;
 use ReflectionMethod;
@@ -367,9 +368,9 @@ class SSP
 
                 $e_db_col_filtered = $this->filterColName($e_db_col);
 
-                if (strpos($e_db_col, $this->db_fake_identifier) !== false) {
+                if ($this->isDbFake($e_db_col)) {
                     if (isset($formatter[$key_2])) $query_data[$key][$e_db_col_filtered] = $formatter[$key_2]($e_tqde);
-                    else $query_data[$key][$e_db_col_filtered] = $e_tqde->{$e_db_col_filtered};
+                    else throw DbFakeMustHaveFormatter::create($e_db_col_filtered);
                 } else {
                     if (isset($formatter[$key_2])) {
                         if (is_callable($formatter[$key_2])) $query_data[$key][$e_db_col_filtered] = $formatter[$key_2]($e_tqde->{$e_db_col_filtered}, $e_tqde);
@@ -434,6 +435,11 @@ class SSP
         }
 
         return isset($dt_col['sortable']) ? $dt_col['sortable'] : $this->is_sort_enable;
+    }
+
+    private function isDbFake($db_col): bool
+    {
+        return strpos($db_col, $this->db_fake_identifier) !== false;
     }
 
     private function filterColName(string|array $cols): string|array
