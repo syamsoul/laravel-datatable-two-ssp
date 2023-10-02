@@ -198,14 +198,20 @@ trait Query
 
         if (!empty($search_value)) {
             $arranged_cols_details = $this->getArrangedColsDetails();
+            $dt_cols = $arranged_cols_details['dt_cols'];
             $db_cols_initial = $arranged_cols_details['db_cols_initial'];
             $db_cols_mid = $arranged_cols_details['db_cols_mid'];
             $db_cols_final = $arranged_cols_details['db_cols_final'];
 
-            $query = $query->where(function($the_query) use($db_cols_initial, $search_value){
+            $query = $query->where(function ($the_query) use ($dt_cols, $db_cols_initial, $search_value) {
+                $count = 0;
                 foreach ($db_cols_initial as $index => $e_col) {
-                    if ($index == 0) $the_query->where($e_col, 'LIKE', "%".$search_value."%");
+                    if (! ($dt_cols[$index]['searchable'] ?? true)) continue;
+
+                    if ($count == 0) $the_query->where($e_col, 'LIKE', "%".$search_value."%");
                     else $the_query->orWhere($e_col, 'LIKE', "%".$search_value."%");
+
+                    $count++;
                 }
             });
         }
