@@ -101,7 +101,14 @@ class UserListController extends Controller
             ['label'=>'ID',         'db'=>'id'          ],
             ['label'=>'Email',      'db'=>'email'       ],
             ['label'=>'Username',   'db'=>'username'    ],
-            ['label'=>'Created At', 'db'=>'created_at'  ],
+            ['label'=>'Fullname',   'db_fake'=>'username', 'formatter'=>function($model){
+                return $model->first_name . " " . $model->last_name;
+            }],
+            ['label'=>'Created At', 'db'=>'created_at', 'formatter'=>function($value, $model){
+                $v->format("Y-m-d H:i:s");
+            }],
+            ['db'=>'first_name', 'is_show'=>false],
+            ['db'=>'last_name', 'is_show'=>false],
         ]);
 
         $dt->setQuery(function ($selected_columns) {
