@@ -10,8 +10,9 @@ use Illuminate\Database\Query\Expression;
 use Illuminate\Http\JsonResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Illuminate\Support\Str;
-use SoulDoit\DataTableTwo\Exceptions\RawExpressionMustHaveAliasName;
+use SoulDoit\DataTableTwo\Exceptions\MustHaveDbOrDbFake;
 use SoulDoit\DataTableTwo\Exceptions\DbFakeMustHaveFormatter;
+use SoulDoit\DataTableTwo\Exceptions\RawExpressionMustHaveAliasName;
 use SoulDoit\DataTableTwo\Exceptions\ValueInCsvColumnsMustBeString;
 use SoulDoit\DataTableTwo\Query;
 use ReflectionMethod;
@@ -40,9 +41,12 @@ class SSP
 
     private function getColumns(): array
     {
-        return array_map(function($v) {
-            if (! is_array($v)) return ['db' => $v];
-            return $v;
+        return array_map(function($dt_col) {
+            if (! is_array($dt_col)) return ['db' => $dt_col];
+
+            if (!isset($dt_col['db']) && !isset($dt_col['db_fake'])) throw MustHaveDbOrDbFake::create();
+
+            return $dt_col;
         }, $this->columns());
     }
 
