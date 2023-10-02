@@ -40,7 +40,7 @@ class SSP
     private function getColumns(): array
     {
         return array_map(function($v) {
-            if (!is_array($v)) return ['db' => $v];
+            if (! is_array($v)) return ['db' => $v];
             return $v;
         }, $this->columns());
     }
@@ -49,33 +49,23 @@ class SSP
     {
         $frontend_framework = $this->frontend_framework ?? config('sd-datatable-two-ssp.frontend_framework', 'others');
 
-        $dt_cols = $this->getColumns();
+        $arranged_cols_details = $this->getArrangedColsDetails();
+
+        $dt_cols = $arranged_cols_details['dt_cols'];
+        $db_cols_final_clean = $arranged_cols_details['db_cols_final_clean'];
 
         $frontend_dt_cols = [];
 
-        foreach ($dt_cols as $dt_col) {
-            if (isset($dt_col['db'])) {
-                $is_db_raw = ($dt_col['db'] instanceof Expression);
-
-                $dt_col_db_arr = $this->getDtColDbArray($dt_col['db'], $is_db_raw);
-
-                if (count($dt_col_db_arr) == 2) {
-                    $db_col = $is_db_raw ? str_replace("`", "", $dt_col_db_arr[1]) : $dt_col_db_arr[1];
-                } else {
-                    if ($is_db_raw) throw RawExpressionMustHaveAliasName::create($this->getRawExpressionValue($dt_col['db']));
-
-                    $dt_col_db_arr = explode(".", $dt_col['db']);
-                    if (count($dt_col_db_arr) == 2) $db_col = $dt_col_db_arr[1];
-                    else $db_col = $dt_col['db'];
-                }
-            } else if (isset($dt_col['db_fake'])) $db_col = $dt_col['db_fake'];
-
-            $dt_col_label = $dt_col['label'] ?? ucwords(str_replace("_", " ", Str::snake($db_col)));
+        foreach ($dt_cols as $index => $dt_col) {
+            if (! ($dt_col['is_show'] ?? true)) continue;
+            
+            $db_col = $db_cols_final_clean[$index];
+            $dt_label = $this->getDtLabel($dt_col, $db_col);
             $sortable = $this->isSortable($dt_col);
 
             if ($frontend_framework == "datatablejs") {
 
-                $e_fe_dt_col = ['title' => $dt_col_label];
+                $e_fe_dt_col = ['title' => $dt_label];
 
                 if (isset($dt_col['class'])) {
                     if (is_array($dt_col['class'])) $e_fe_dt_col['className'] = implode(" ", $dt_col['class']);
@@ -90,12 +80,12 @@ class SSP
 
                 if ($frontend_framework == "vuetify") {
                     array_push($frontend_dt_cols, [
-                        'text' => $dt_col_label,
+                        'text' => $dt_label,
                         'value' => $db_col,
                     ]);
                 } else if ($frontend_framework == "others") {
                     array_push($frontend_dt_cols, [
-                        'label' => $dt_col_label,
+                        'label' => $dt_label,
                         'db' => $db_col,
                         'class' => $dt_col['class'] ?? [],
                         'sortable' => $sortable,
@@ -235,7 +225,13 @@ class SSP
             'Pragma'              => 'public'
         ];
 
-        $query = $this->query($this->getArrangedColsDetails()['db_cols']);
+        $arranged_cols_details = $this->getArrangedColsDetails(true);
+
+        $dt_cols = $arranged_cols_details['dt_cols'];
+        $db_cols = $arranged_cols_details['db_cols'];
+        $db_cols_final_clean = $arranged_cols_details['db_cols_final_clean'];
+
+        $query = $this->query($db_cols);
 
         $query = $this->querySearch($query);
 
@@ -254,11 +250,12 @@ class SSP
         $query_data = $this->getFormattedData($query, true);
 
         // add headers for each column in the CSV download
-        $dt_cols = $this->getColumns();
-        foreach ($dt_cols as $index => $e_dt_col) {
-            if (! ($e_dt_col['is_show_in_doc'] ?? true)) unset($dt_cols[$index]);
-        }
-        array_unshift($query_data, collect($dt_cols)->pluck('label')->toArray());
+        array_unshift($query_data, collect($dt_cols)->filter(function ($dt_col) {
+            return ($dt_col['is_show_in_doc'] ?? true);
+        })->map(function ($dt_col, $index) use ($db_cols_final_clean) {
+            $dt_col['label'] = $this->getDtLabel($dt_col, $db_cols_final_clean[$index]);
+            return $dt_col;
+        })->pluck('label')->toArray());
 
         //check if value in each columns is string
         foreach ($query_data as $row) {
@@ -283,19 +280,15 @@ class SSP
 
     private function getArrangedColsDetails(bool $is_for_doc = false) : array
     {
-        if (!$is_for_doc) {
+        if (! $is_for_doc) {
             if ($this->arranged_cols_details != null) return $this->arranged_cols_details;
         }
 
         $dt_cols = $this->getColumns();
 
-        $db_cols = $db_cols_initial = $db_cols_mid = $db_cols_final = $formatter = [];
+        $db_cols = $db_cols_initial = $db_cols_mid = $db_cols_final = $db_cols_final_clean = $formatter = [];
 
         foreach ($dt_cols as $key => $dt_col) {
-            if ($is_for_doc) {
-                if (! ($dt_col['is_show_in_doc'] ?? true)) continue;
-            }
-
             if (isset($dt_col['db'])) {
                 $db_cols[$key] = $dt_col['db'];
 
@@ -310,18 +303,21 @@ class SSP
                 } else {
                     if ($is_db_raw) throw RawExpressionMustHaveAliasName::create($this->getRawExpressionValue($dt_col['db']));
 
+                    $db_cols_initial[$key] = $dt_col['db'];
+                    $db_cols_mid[$key] = $dt_col['db'];
+
                     $dt_col_db_arr = explode(".", $dt_col['db']);
 
                     if (count($dt_col_db_arr) == 2) $db_cols_final[$key] = $dt_col_db_arr[1];
                     else $db_cols_final[$key] = $dt_col['db'];
 
-                    $db_cols_mid[$key] = $dt_col['db'];
-                    $db_cols_initial[$key] = $dt_col['db'];
+                    $db_cols_final_clean[$key] = $db_cols_final[$key];
                 }
             } else if (isset($dt_col['db_fake'])) {
-                $db_cols_final[$key] = $dt_col['db_fake'] . $this->db_fake_identifier;
-                $db_cols_mid[$key] = $dt_col['db_fake'] . $this->db_fake_identifier;
                 $db_cols_initial[$key] = $dt_col['db_fake'] . $this->db_fake_identifier;
+                $db_cols_mid[$key] = $dt_col['db_fake'] . $this->db_fake_identifier;
+                $db_cols_final[$key] = $dt_col['db_fake'] . $this->db_fake_identifier;
+                $db_cols_final_clean[$key] = $dt_col['db_fake'];
             }
 
             if (isset($dt_col['formatter'])) $formatter[$key] = $dt_col['formatter'];
@@ -337,10 +333,11 @@ class SSP
             'db_cols_initial' => $db_cols_initial,
             'db_cols_mid' => $db_cols_mid,
             'db_cols_final' => $db_cols_final,
+            'db_cols_final_clean' => $db_cols_final_clean,
             'formatter' => $formatter,
         ];
 
-        if (!$is_for_doc) $this->arranged_cols_details = $arranged_cols_details;
+        if (! $is_for_doc) $this->arranged_cols_details = $arranged_cols_details;
 
         return $arranged_cols_details;
     }
@@ -350,6 +347,7 @@ class SSP
         $query_data_eloq = $query->get();
 
         $arranged_cols_details = $this->getArrangedColsDetails($is_for_doc);
+        $dt_cols = $arranged_cols_details['dt_cols'];
         $db_cols = $arranged_cols_details['db_cols'];
         $db_cols_final = $arranged_cols_details['db_cols_final'];
         $formatter = $arranged_cols_details['formatter'];
@@ -357,8 +355,18 @@ class SSP
         $query_data = [];
         foreach ($query_data_eloq as $key => $e_tqde) {
             $query_data[$key] = [];
+
             foreach ($db_cols_final as $key_2 => $e_db_col) {
+                $dt_col = $dt_cols[$key_2];
+
+                if ($is_for_doc) {
+                    if (! ($dt_col['is_show_in_doc'] ?? true)) continue;
+                } else {
+                    if (! ($dt_col['is_show'] ?? true)) continue;
+                }
+
                 $e_db_col_filtered = $this->filterColName($e_db_col);
+
                 if (strpos($e_db_col, $this->db_fake_identifier) !== false) {
                     if (isset($formatter[$key_2])) $query_data[$key][$e_db_col_filtered] = $formatter[$key_2]($e_tqde);
                     else $query_data[$key][$e_db_col_filtered] = $e_tqde->{$e_db_col_filtered};
@@ -376,6 +384,8 @@ class SSP
                     
                     if (is_array($value)) {
                         $query_data[$key][$e_db_col_filtered] = json_encode($value);
+                    } else if (is_bool($value)) {
+                        $query_data[$key][$e_db_col_filtered] = $value ? 'true' : 'false';
                     } else if (is_string($value)) {
                         $query_data[$key][$e_db_col_filtered] = strip_tags($value);
                     }
@@ -437,5 +447,10 @@ class SSP
         foreach ($cols as $key => $col) $cols[$key] = $filter($col);
 
         return $cols;
+    }
+
+    private function getDtLabel(array $dt_col, string $db_col): string
+    {
+        return $dt_col['label'] ?? ucwords(str_replace("_", " ", Str::snake($db_col)));
     }
 }
