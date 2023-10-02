@@ -105,7 +105,7 @@ class UserListController extends Controller
                 return $model->first_name . " " . $model->last_name;
             }],
             ['label'=>'Created At', 'db'=>'created_at', 'formatter'=>function($value, $model){
-                $v->format("Y-m-d H:i:s");
+                $value->format("Y-m-d H:i:s");
             }],
             ['db'=>'first_name', 'is_show'=>false],
             ['db'=>'last_name', 'is_show'=>false],
