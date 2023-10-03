@@ -172,10 +172,15 @@ trait Query
 
                 $allowed_items_per_page = array_unique($allowed_items_per_page);
 
+                array_push($validation_rules[$secondRequestName], 'in:' . implode(',', $allowed_items_per_page));
+                $validation_error_messages["$secondRequestName.in"] = "The selected $secondRequestName is invalid. Available options: " . implode(',', $allowed_items_per_page);
+
                 if (! in_array(-1, $allowed_items_per_page)) {
                     array_push($validation_rules[$firstRequestName], 'required');
-                    array_push($validation_rules[$secondRequestName], 'required', 'in:' . implode(',', $allowed_items_per_page));
-                    $validation_error_messages["$secondRequestName.in"] = "The selected $secondRequestName is invalid. Available options: " . implode(',', $allowed_items_per_page);
+                    array_push($validation_rules[$secondRequestName], 'required');
+                } else {
+                    array_push($validation_rules[$firstRequestName], 'filled');
+                    array_push($validation_rules[$secondRequestName], 'filled');
                 }
             }
         }
