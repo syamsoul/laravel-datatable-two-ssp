@@ -3,6 +3,7 @@ namespace SoulDoit\DataTableTwo;
 
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Query\Builder as QueryBuilder;
+use Illuminate\Support\Facades\Validator;
 
 trait Query
 {
@@ -14,6 +15,7 @@ trait Query
     private array|null $allowed_items_per_page = null;
     private bool $is_search_enable = false;
     private bool $is_sort_enable = true;
+    private bool $is_allowed_export_all_items_in_csv = false;
 
     protected function query(array $selected_columns)
     {
@@ -66,7 +68,7 @@ trait Query
         }
 
         if ($frontend_framework == "datatablejs") {
-            $request->validate([
+            $this->validateRequest([
                 'order' => ['filled', 'array'],
                 'order.*.column' => ['required', 'in:' . implode(",", array_keys($sortable_cols))],
                 'order.*.dir' => ['required', 'in:asc,desc'],
@@ -82,7 +84,7 @@ trait Query
         } else if (in_array($frontend_framework, ["vuetify", "others"])) {
 
             if ($request->filled('sortBy') && $request->filled('sortDesc')) {
-                $request->validate([
+                $this->validateRequest([
                     'sortBy' => ['in:' . implode(",", $sortable_cols)],
                     'sortDesc' => ['in:1,0,true,false'],
                 ],[
@@ -106,11 +108,11 @@ trait Query
         return $query;
     }
 
-    private function queryPagination(EloquentBuilder|QueryBuilder $query)
+    private function queryPagination(EloquentBuilder|QueryBuilder $query, bool $is_for_csv = false)
     {
         $request = request();
 
-        $pagination_data = $this->getPaginationData();
+        $pagination_data = $this->getPaginationData($is_for_csv);
 
         if (isset($pagination_data['items_per_page']) && isset($pagination_data['offset'])) {
             if ($pagination_data['items_per_page'] != "-1") $query->limit($pagination_data['items_per_page'])->offset($pagination_data['offset']);
@@ -119,7 +121,7 @@ trait Query
         return $query;
     }
 
-    private function getPaginationData()
+    private function getPaginationData(bool $is_for_csv = false)
     {
         if ($this->pagination_data !== null) return $this->pagination_data;
 
@@ -164,7 +166,11 @@ trait Query
             if (is_array($allowed_items_per_page)) {
                 $allowed_items_per_page = array_map(function($v){ return intval($v); }, $allowed_items_per_page);
 
-                if (!in_array(-1, $allowed_items_per_page)) {
+                if (! in_array(-1, $allowed_items_per_page)) {
+                    if ($is_for_csv) {
+                        if ($this->is_allowed_export_all_items_in_csv) array_push($allowed_items_per_page, -1);
+                    }
+
                     array_push($validation_rules[$firstRequestName], 'required');
                     array_push($validation_rules[$secondRequestName], 'required', 'in:' . implode(',', $allowed_items_per_page));
                     $validation_error_messages["$secondRequestName.in"] = "The selected $secondRequestName is invalid. Available options: " . implode(',', $allowed_items_per_page);
@@ -172,7 +178,7 @@ trait Query
             }
         }
 
-        $request->validate($validation_rules, $validation_error_messages);
+        $this->validateRequest($validation_rules, $validation_error_messages);
 
         $this->pagination_data = $ret;
 
@@ -261,16 +267,18 @@ trait Query
         return $this;
     }
 
+    public function allowExportAllItemsInCsv(bool $allow = true)
+    {
+        $this->is_allowed_export_all_items_in_csv = $allow;
+
+        return $this;
+    }
+
     public function setAllowedItemsPerPage(int|array $allowed_items_per_page)
     {
         $this->allowed_items_per_page = is_numeric($allowed_items_per_page) ? [$allowed_items_per_page] : (is_array($allowed_items_per_page) ? $allowed_items_per_page : null);
 
         return $this;
-    }
-
-    public function getAllowedItemsPerPage(): ?array
-    {
-        return $this->allowed_items_per_page;
     }
 
     public function isSearchEnabled(): bool
@@ -281,5 +289,35 @@ trait Query
     public function isSortingEnabled(): bool
     {
         return $this->is_sort_enable;
+    }
+
+    public function getAllowedItemsPerPage(): ?array
+    {
+        return $this->allowed_items_per_page;
+    }
+
+    public function isAllowedExportAllItemsInCsv(): bool
+    {
+        return $this->is_allowed_export_all_items_in_csv;
+    }
+
+    private function validateRequest(array $rules, array $error_messages = [])
+    {
+        $request = request();
+
+        $validator = Validator::make($request->all(), $rules, $error_messages);
+
+        if ($validator->fails()) {
+            if ($request->expectsJson()) {
+                $errors = $validator->errors();
+
+                abort(response()->json([
+                    'message' => $errors->first(),
+                    'errors' => $errors->toArray(),
+                ], 403));
+            } else {
+                abort(422, $validator->messages()->first());
+            }
+        }
     }
 }
