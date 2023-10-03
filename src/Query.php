@@ -167,7 +167,7 @@ trait Query
                 $allowed_items_per_page = array_map(function($v){ return intval($v); }, $allowed_items_per_page);
 
                 if ($is_for_csv) {
-                    if ($this->is_allowed_export_all_items_in_csv) array_merge($allowed_items_per_page, [-1]);
+                    if ($this->is_allowed_export_all_items_in_csv) $allowed_items_per_page = array_merge($allowed_items_per_page, [-1]);
                 }
 
                 $allowed_items_per_page = array_unique($allowed_items_per_page);
