@@ -230,9 +230,9 @@ class SSP
                 $dt_col_db_arr = $this->getDtColDbArray($dt_col['db'], $is_db_raw);
 
                 if (count($dt_col_db_arr) == 2) {
-                    $db_cols_final[$key] = $is_db_raw ? str_replace("`", "", $dt_col_db_arr[1]) : $dt_col_db_arr[1];
-                    $db_cols_mid[$key] = $is_db_raw ? str_replace("`", "", $dt_col_db_arr[1]) : $dt_col_db_arr[1];
                     $db_cols_initial[$key] = $is_db_raw ? DB::raw($dt_col_db_arr[0]) : $dt_col_db_arr[0];
+                    $db_cols_mid[$key] = $is_db_raw ? str_replace("`", "", $dt_col_db_arr[1]) : $dt_col_db_arr[1];
+                    $db_cols_final[$key] = $is_db_raw ? str_replace("`", "", $dt_col_db_arr[1]) : $dt_col_db_arr[1];
                 } else {
                     if ($is_db_raw) throw RawExpressionMustHaveAliasName::create($this->getRawExpressionValue($dt_col['db']));
 
@@ -243,9 +243,9 @@ class SSP
 
                     if (count($dt_col_db_arr) == 2) $db_cols_final[$key] = $dt_col_db_arr[1];
                     else $db_cols_final[$key] = $dt_col['db'];
-
-                    $db_cols_final_clean[$key] = $db_cols_final[$key];
                 }
+
+                $db_cols_final_clean[$key] = $db_cols_final[$key];
             } else if (isset($dt_col['db_fake'])) {
                 $db_cols_initial[$key] = $dt_col['db_fake'] . $this->db_fake_identifier;
                 $db_cols_mid[$key] = $dt_col['db_fake'] . $this->db_fake_identifier;
