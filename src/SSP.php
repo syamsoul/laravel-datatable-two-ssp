@@ -145,7 +145,7 @@ class SSP
         if ($is_for_csv) {
             // prepend headers label for each column to the very first row
             array_unshift($query_data, collect($dt_cols)->filter(function ($dt_col) {
-                return $dt_col['is_show_in_doc'] ?? ($dt_col['is_show'] ?? true);
+                return $dt_col['is_show_in_csv'] ?? ($dt_col['is_show'] ?? true);
             })->map(function ($dt_col, $index) use ($db_cols_final_clean) {
                 $dt_col['label'] = $this->getDtLabel($dt_col, $db_cols_final_clean[$index]);
                 return $dt_col;
@@ -296,7 +296,7 @@ class SSP
                 $is_show = $dt_col['is_show'] ?? true;
 
                 if ($is_for_csv) {
-                    if (! ($dt_col['is_show_in_doc'] ?? $is_show)) continue;
+                    if (! ($dt_col['is_show_in_csv'] ?? $is_show)) continue;
                 } else {
                     if (! $is_show) continue;
                 }

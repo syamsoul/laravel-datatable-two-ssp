@@ -298,14 +298,14 @@ trait Query
         return $this->is_sort_enable;
     }
 
-    public function getAllowedItemsPerPage(): ?array
-    {
-        return $this->allowed_items_per_page;
-    }
-
     public function isAllowedExportAllItemsInCsv(): bool
     {
         return $this->is_allowed_export_all_items_in_csv;
+    }
+
+    public function getAllowedItemsPerPage(): ?array
+    {
+        return $this->allowed_items_per_page;
     }
 
     private function validateRequest(array $rules, array $error_messages = [])
