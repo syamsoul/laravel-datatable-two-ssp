@@ -124,10 +124,13 @@ class UserListController extends Controller
         });
 
         // return JSON response
-        return $dt->getData();
+        return $dt->response()->json();
 
         // or return CSV file stream response
-        // return $dt->getCsvFile();
+        // return $dt->response()->csv();
+
+        // or return in PHP array
+        // return $dt->getData();
     }
 }
 ```

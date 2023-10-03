@@ -166,11 +166,13 @@ trait Query
             if (is_array($allowed_items_per_page)) {
                 $allowed_items_per_page = array_map(function($v){ return intval($v); }, $allowed_items_per_page);
 
-                if (! in_array(-1, $allowed_items_per_page)) {
-                    if ($is_for_csv) {
-                        if ($this->is_allowed_export_all_items_in_csv) array_push($allowed_items_per_page, -1);
-                    }
+                if ($is_for_csv) {
+                    if ($this->is_allowed_export_all_items_in_csv) array_merge($allowed_items_per_page, [-1]);
+                }
 
+                $allowed_items_per_page = array_unique($allowed_items_per_page);
+
+                if (! in_array(-1, $allowed_items_per_page)) {
                     array_push($validation_rules[$firstRequestName], 'required');
                     array_push($validation_rules[$secondRequestName], 'required', 'in:' . implode(',', $allowed_items_per_page));
                     $validation_error_messages["$secondRequestName.in"] = "The selected $secondRequestName is invalid. Available options: " . implode(',', $allowed_items_per_page);
