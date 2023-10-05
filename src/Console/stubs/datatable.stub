@@ -3,15 +3,17 @@
 namespace {{ namespace }};
 
 use SoulDoit\DataTableTwo\SSP;
+use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
+use Illuminate\Database\Query\Builder as QueryBuilder;
 
 final class {{ class }} extends SSP
 {
-    protected function columns()
+    protected function columns(): array
     {
         //
     }
 
-    protected function query($selected_columns)
+    protected function query($selected_columns): EloquentBuilder|QueryBuilder
     {
         //
     }

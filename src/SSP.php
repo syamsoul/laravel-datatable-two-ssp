@@ -24,7 +24,7 @@ class SSP
     
     private $frontend_framework = null;
 
-    protected function columns()
+    protected function columns(): array
     {
         return $this->dt_columns;
     }
