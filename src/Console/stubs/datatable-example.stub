@@ -29,7 +29,7 @@ final class {{ class }} extends SSP
     }
 
     // This is optional. You can remove this method if not needed.
-    protected function queryCustomFilter($query)
+    protected function queryCustomFilter($query): void
     {
         $request = request();
 

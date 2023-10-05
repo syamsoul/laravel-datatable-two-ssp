@@ -106,17 +106,17 @@ class UserListController extends Controller
     public function index(SSP $dt)
     {
         $dt->setColumns([
-            ['label'=>'ID',         'db'=>'id'          ],
-            ['label'=>'Email',      'db'=>'email'       ],
-            ['label'=>'Username',   'db'=>'username'    ],
-            ['label'=>'Fullname',   'db_fake'=>'fullname', 'formatter'=>function($model){
+            ['label' => 'ID',         'db' => 'id'          ],
+            ['label' => 'Email',      'db' => 'email'       ],
+            ['label' => 'Username',   'db' => 'username'    ],
+            ['label' => 'Fullname',   'db_fake' => 'fullname', 'formatter' => function ($model) {
                 return $model->first_name . " " . $model->last_name;
             }],
-            ['label'=>'Created At', 'db'=>'created_at', 'formatter'=>function($value, $model){
+            ['label' => 'Created At', 'db' => 'created_at', 'formatter' => function ($value, $model) {
                 return $value->format("Y-m-d H:i:s");
             }],
-            ['db'=>'first_name', 'is_show'=>false],
-            ['db'=>'last_name', 'is_show'=>false],
+            ['db' => 'first_name', 'is_show' => false],
+            ['db' => 'last_name',  'is_show' => false],
         ]);
 
         $dt->setQuery(function ($selected_columns) {

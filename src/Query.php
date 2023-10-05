@@ -22,7 +22,7 @@ trait Query
         return is_callable($this->dt_query) ? ($this->dt_query)($selected_columns) : $this->dt_query;
     }
 
-    protected function queryCount(EloquentBuilder|QueryBuilder $query)
+    protected function queryCount(EloquentBuilder|QueryBuilder $query): int
     {
         if ($this->query_count == null) {
             if ($query instanceof EloquentBuilder) {
@@ -49,7 +49,7 @@ trait Query
         return $this;
     }
 
-    private function queryOrder(EloquentBuilder|QueryBuilder $query)
+    private function queryOrder(EloquentBuilder|QueryBuilder $query): void
     {
         $request = request();
 
@@ -106,7 +106,7 @@ trait Query
         }
     }
 
-    private function queryPagination(EloquentBuilder|QueryBuilder $query, bool $is_for_csv = false)
+    private function queryPagination(EloquentBuilder|QueryBuilder $query, bool $is_for_csv = false): void
     {
         $request = request();
 
@@ -188,7 +188,7 @@ trait Query
         return $ret;
     }
 
-    protected function queryCustomFilter(EloquentBuilder|QueryBuilder $query)
+    protected function queryCustomFilter(EloquentBuilder|QueryBuilder $query): void
     {
         if (is_callable($this->query_custom_filter)) ($this->query_custom_filter)($query);
     }
@@ -200,7 +200,7 @@ trait Query
         return $this;
     }
 
-    private function querySearch(EloquentBuilder|QueryBuilder $query)
+    private function querySearch(EloquentBuilder|QueryBuilder $query): void
     {
         $search_value = $this->getSearchValue();
 
