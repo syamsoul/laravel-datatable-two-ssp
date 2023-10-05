@@ -17,7 +17,7 @@ trait Query
     private bool $is_sort_enable = true;
     private bool $is_allowed_export_all_items_in_csv = false;
 
-    protected function query(array $selected_columns)
+    protected function query(array $selected_columns): EloquentBuilder|QueryBuilder
     {
         return is_callable($this->dt_query) ? ($this->dt_query)($selected_columns) : $this->dt_query;
     }

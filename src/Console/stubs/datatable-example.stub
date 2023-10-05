@@ -33,10 +33,6 @@ final class {{ class }} extends SSP
     {
         $request = request();
 
-        if (! $request->anyFilled(['filter_date_start', 'filter_date_end', 'filter_username'])) {
-            return false; // NOTE: return false to ensure count query will not executed twice
-        }
-
         $request->validate([
             'filter_date_start' => ['nullable', 'date_format:Y-m-d'],
             'filter_date_end' => ['nullable', 'date_format:Y-m-d'],
@@ -45,8 +41,6 @@ final class {{ class }} extends SSP
         if ($request->filled('filter_date_start')) $query->where("created_at", '>=', \Illuminate\Support\Carbon::parse($request->filter_date_start)->startOfDay());
         if ($request->filled('filter_date_end')) $query->where("created_at", '<=', \Illuminate\Support\Carbon::parse($request->filter_date_end)->endOfDay());
         if ($request->filled('filter_username')) $query->where("username", 'LIKE', "%".$request->filter_username."%");
-
-        return $query;
     }
 
     // This is optional. This method can be used to customize count query. You can remove this method if want to use default count query.
