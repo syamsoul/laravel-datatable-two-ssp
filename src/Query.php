@@ -104,8 +104,6 @@ trait Query
             }
 
         }
-
-        return $query;
     }
 
     private function queryPagination(EloquentBuilder|QueryBuilder $query, bool $is_for_csv = false)
@@ -117,8 +115,6 @@ trait Query
         if (isset($pagination_data['items_per_page']) && isset($pagination_data['offset'])) {
             if ($pagination_data['items_per_page'] != "-1") $query->limit($pagination_data['items_per_page'])->offset($pagination_data['offset']);
         }
-
-        return $query;
     }
 
     private function getPaginationData(bool $is_for_csv = false)
@@ -194,14 +190,12 @@ trait Query
 
     protected function queryCustomFilter(EloquentBuilder|QueryBuilder $query)
     {
-        if ($this->query_custom_filter == null) return $query;
-
-        return is_callable($this->query_custom_filter) ? ($this->query_custom_filter)($query) : $this->query_custom_filter;
+        if (is_callable($this->query_custom_filter)) ($this->query_custom_filter)($query);
     }
 
-    public function setQueryCustomFilter(callable|EloquentBuilder|QueryBuilder $query)
+    public function setQueryCustomFilter(callable $query_custom_filter)
     {
-        $this->query_custom_filter = $query;
+        $this->query_custom_filter = $query_custom_filter;
 
         return $this;
     }
@@ -214,10 +208,8 @@ trait Query
             $arranged_cols_details = $this->getArrangedColsDetails();
             $dt_cols = $arranged_cols_details['dt_cols'];
             $db_cols_initial = $arranged_cols_details['db_cols_initial'];
-            $db_cols_mid = $arranged_cols_details['db_cols_mid'];
-            $db_cols_final = $arranged_cols_details['db_cols_final'];
 
-            $query = $query->where(function ($the_query) use ($dt_cols, $db_cols_initial, $search_value) {
+            $query->where(function ($the_query) use ($dt_cols, $db_cols_initial, $search_value) {
                 $count = 0;
                 foreach ($db_cols_initial as $index => $e_col) {
                     if (! ($dt_cols[$index]['searchable'] ?? true)) continue;
@@ -230,8 +222,6 @@ trait Query
                 }
             });
         }
-
-        return $query;
     }
 
     private function getSearchValue(): string

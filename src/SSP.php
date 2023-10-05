@@ -118,27 +118,21 @@ class SSP
             $query_count = $this->queryCount($query);
         }
 
-        $query = $this->querySearch($query);
+        $before_filtered_sql_query = $query->toSql();
 
-        $has_custom_filter_query = false;
+        $this->querySearch($query);
+        $this->queryCustomFilter($query);
 
-        if ($this->query_custom_filter != null || $this->isMethodOverridden('queryCustomFilter')) {
-            $the_custom_filter_query = $this->queryCustomFilter($query);
-            
-            if (gettype($the_custom_filter_query) == 'object') {
-                if ($the_custom_filter_query instanceof EloquentBuilder || $the_custom_filter_query instanceof QueryBuilder) {
-                    $has_custom_filter_query = true;
-                    $query = $the_custom_filter_query;
-                }
-            }
-        }
+        $after_filtered_sql_query = $query->toSql();
+
+        $has_filter_query = $before_filtered_sql_query !== $after_filtered_sql_query;
 
         if (! $is_for_csv) {
-            $query_filtered_count = (empty($this->getSearchValue()) && !$has_custom_filter_query) ? $query_count : $this->queryCount($query);
+            $query_filtered_count = $has_filter_query ? $this->queryCount($query) : $query_count;
         }
 
-        $query = $this->queryOrder($query);
-        $query = $this->queryPagination($query, $is_for_csv);
+        $this->queryOrder($query);
+        $this->queryPagination($query, $is_for_csv);
 
         $query_data = $this->getFormattedData($query, $is_for_csv);
 
@@ -352,15 +346,6 @@ class SSP
         $db_col = $is_db_raw ? $this->getRawExpressionValue($db_col) : $db_col;
 
         return explode(" as ", preg_replace("/ as /i", " as ", $db_col));
-    }
-    
-    private function isMethodOverridden(string $method_name)
-    {
-        $current_class = get_class($this);
-        if ($current_class === 'SoulDoit\DataTableTwo\SSP') return false;
-        
-        $reflector = new ReflectionMethod($this, $method_name);
-        return ($reflector->getDeclaringClass()->getName() === $current_class);
     }
 
     private function isSortable(array $dt_col): bool
