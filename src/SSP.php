@@ -115,7 +115,7 @@ class SSP
         $query = $this->query($db_cols);
 
         if (! $is_for_csv) {
-            $query_count = $this->queryCount($query);
+            if ($this->is_count_enable) $query_count = $this->queryCount($query);
         }
 
         $before_filtered_sql_query = $query->toSql();
@@ -128,7 +128,7 @@ class SSP
         $has_filter_query = $before_filtered_sql_query !== $after_filtered_sql_query;
 
         if (! $is_for_csv) {
-            $query_filtered_count = $has_filter_query ? $this->queryCount($query) : $query_count;
+            if ($this->is_count_enable) $query_filtered_count = $has_filter_query ? $this->queryCount($query) : $query_count;
         }
 
         $this->queryOrder($query);
@@ -169,12 +169,15 @@ class SSP
 
             $ret['draw'] = $request->draw ?? 0;
             $ret['data'] = $new_query_data;
-            $ret['recordsTotal'] = $query_count;
-            $ret['recordsFiltered'] = $query_filtered_count;
+
+            if ($this->is_count_enable) {
+                $ret['recordsTotal'] = $query_count;
+                $ret['recordsFiltered'] = $query_filtered_count;
+            }
 
         } else if (in_array($frontend_framework, ["vuetify", "others"])) {
 
-            $ret['data'] = [];
+            $ret = [];
 
             $pagination_data = $this->getPaginationData();
 
@@ -183,18 +186,19 @@ class SSP
                 $current_item_position_start = $current_page_item_count == 0 ? 0 : ($pagination_data['offset'] + 1);
                 $current_item_position_end = $current_page_item_count == 0 ? 0 : ($current_item_position_start + $current_page_item_count) - 1;
 
-                $ret['data'] = array_merge($ret['data'], [
+                $ret = array_merge($ret, [
                     'current_item_position_start' => $current_item_position_start,
                     'current_item_position_end' => $current_item_position_end,
                     'current_page_item_count' => $current_page_item_count,
                 ]);
             }
 
-            $ret['data'] = array_merge($ret['data'], [
-                'total_item_count' => $query_count,
-                'total_filtered_item_count' => $query_filtered_count,
-                'items' => $query_data,
-            ]);
+            if ($this->is_count_enable) {
+                $ret['total_item_count'] = $query_count;
+                $ret['total_filtered_item_count'] = $query_filtered_count;
+            }
+
+            $ret['items'] = $query_count;
         }
 
         return $ret;

@@ -15,6 +15,7 @@ trait Query
     private array|null $allowed_items_per_page = null;
     private bool $is_search_enable = false;
     private bool $is_sort_enable = true;
+    private bool $is_count_enable = true;
     private bool $is_allowed_export_all_items_in_csv = false;
 
     protected function query(array $selected_columns): EloquentBuilder|QueryBuilder
@@ -264,6 +265,13 @@ trait Query
         return $this;
     }
 
+    public function disableCount(bool $disable = true)
+    {
+        $this->is_count_enable = !$disable;
+
+        return $this;
+    }
+
     public function allowExportAllItemsInCsv(bool $allow = true)
     {
         $this->is_allowed_export_all_items_in_csv = $allow;
@@ -286,6 +294,11 @@ trait Query
     public function isSortingEnabled(): bool
     {
         return $this->is_sort_enable;
+    }
+
+    public function isCountEnabled(): bool
+    {
+        return $this->is_count_enable;
     }
 
     public function isAllowedExportAllItemsInCsv(): bool

@@ -15,9 +15,10 @@ class Response
 
     public function json(): JsonResponse
     {
-        return response()->json(array_merge([
+        return response()->json([
             'success' => true,
-        ], $this->ssp->getData()));
+            'data' => $this->ssp->getData(),
+        ]);
     }
 
     public function csv(): StreamedResponse
