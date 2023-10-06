@@ -198,7 +198,7 @@ class SSP
                 $ret['total_filtered_item_count'] = $query_filtered_count;
             }
 
-            $ret['items'] = $query_count;
+            $ret['items'] = $query_data;
         }
 
         return $ret;
