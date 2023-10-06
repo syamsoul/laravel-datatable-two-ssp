@@ -2,18 +2,20 @@
 
 namespace {{ namespace }};
 
-use SoulDoit\DataTableTwo\SSP;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Query\Builder as QueryBuilder;
+use SoulDoit\DataTableTwo\SSP;
 
 final class {{ class }} extends SSP
 {
     public function __construct()
     {
-        $this->enableSearch();
-        $this->disableSorting();
-        $this->setAllowedItemsPerPage([5, 10, 20]);
-        $this->setFrontendFramework('others');
+        // $this->enableSearch();
+        // $this->disableSorting();
+        // $this->disableCount();
+        // $this->allowExportAllItemsInCsv();
+        // $this->setAllowedItemsPerPage([5, 10, 20]);
+        // $this->setFrontendFramework('others');
     }
 
     protected function columns(): array
