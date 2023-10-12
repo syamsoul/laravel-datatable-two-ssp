@@ -15,10 +15,18 @@ class Response
 
     public function json(): JsonResponse
     {
-        return response()->json([
-            'success' => true,
-            'data' => $this->ssp->getData(),
-        ]);
+        $frontend_framework = $this->ssp->getFrontendFramework();
+
+        $data = $this->ssp->getData();
+
+        if ($frontend_framework === 'datatablejs') {
+            return response()->json($data);
+        } else {
+            return response()->json([
+                'success' => true,
+                'data' => $data,
+            ]);
+        }
     }
 
     public function csv(): StreamedResponse

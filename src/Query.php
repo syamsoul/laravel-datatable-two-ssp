@@ -54,7 +54,7 @@ trait Query
     {
         $request = request();
 
-        $frontend_framework = $this->frontend_framework ?? config('sd-datatable-two-ssp.frontend_framework', 'others');
+        $frontend_framework = $this->getFrontendFramework();
 
         $arranged_cols_details = $this->getArrangedColsDetails();
         $dt_cols = $arranged_cols_details['dt_cols'];
@@ -126,7 +126,7 @@ trait Query
 
         $ret = [];
 
-        $frontend_framework = $this->frontend_framework ?? config('sd-datatable-two-ssp.frontend_framework', 'others');
+        $frontend_framework = $this->getFrontendFramework();
 
         if ($frontend_framework == "datatablejs") {
 
@@ -230,7 +230,7 @@ trait Query
         if (! $this->is_search_enable) return '';
 
         $request = request();
-        $frontend_framework = $this->frontend_framework ?? config('sd-datatable-two-ssp.frontend_framework', 'others');
+        $frontend_framework = $this->getFrontendFramework();
 
         $search_value = '';
 

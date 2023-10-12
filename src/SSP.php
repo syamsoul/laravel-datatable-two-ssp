@@ -49,7 +49,7 @@ class SSP
 
     public function getFrontEndColumns(): array
     {
-        $frontend_framework = $this->frontend_framework ?? config('sd-datatable-two-ssp.frontend_framework', 'others');
+        $frontend_framework = $this->getFrontendFramework();
 
         $arranged_cols_details = $this->getArrangedColsDetails();
 
@@ -104,7 +104,7 @@ class SSP
     {
         $request = request();
 
-        $frontend_framework = $this->frontend_framework ?? config('sd-datatable-two-ssp.frontend_framework', 'others');
+        $frontend_framework = $this->getFrontendFramework();
 
         $arranged_cols_details = $this->getArrangedColsDetails($is_for_csv);
         $dt_cols = $arranged_cols_details['dt_cols'];
@@ -335,6 +335,11 @@ class SSP
         $this->frontend_framework = $frontend_framework;
 
         return $this;
+    }
+
+    public function getFrontendFramework()
+    {
+        return $this->frontend_framework ?? config('sd-datatable-two-ssp.frontend_framework', 'others');
     }
 
     private function getRawExpressionValue(Expression $raw_expression)
